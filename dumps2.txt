@@ -1,0 +1,9 @@
+camera service
+
+_cameraController to get the camera description
+
+initialize():
+	check if cam property is found
+	else get the front camera (await function)
+	start camera(set cameracontroller)
+	cameraRotation for cameras in landscape mode

@@ -1,0 +1,51 @@
+SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/initiate_attendance'),
+                      child: AttContainer(desc: 'Initiate Attendance'),
+                    ),
+                    AttContainer(desc: 'Timetable')
+                  ],
+                ),
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/performance'),
+                      child: AttContainer(desc: 'Performance'),
+                    ),
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, "/reports");
+                        },
+                        child: AttContainer(desc: 'Attendance Report'))
+                  ],
+                ),
+              ),
+
+=========================================================================
+children: [
+          Navigator(
+              initialRoute: '/dashboard',
+              onPopPage: (route, result) => route.didPop(result),
+              onGenerateRoute: (settings) {
+                final routes = {
+                  '/dashboard': (context) => Dashboard(),
+                  '/initiate_attendance': (context) => Initiate_Attendance(),
+                  '/performance': (context) => Performance(),
+                  '/more': (context) => More()
+                };
+                return MaterialPageRoute(
+                  builder: (context) {
+                    return routes[settings.name]!(context);
+                  },
+                );
+              }),
+        ],

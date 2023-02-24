@@ -1,0 +1,26 @@
+initialize camera
+get the device camera
+select the front camera
+setup camera controller(front_camera and resolution)
+
+
+to detect face from camera
+
+get the image data which includes (to be in a list)
+	- size of the image
+	- rotation mode
+	- image format
+	- plane
+
+Google ML Kit
+used to detect face and convert to array
+	
+
+mlService - for predicting image(comparing)
+initialize
+get the device platform (iOS or Android)
+set the current prediction
+	check if interpreter(from tflite model) and face(from camera) are not null
+	process the inputted image
+		- crop the face (converted image from camera): convert the image from camera then crop
+

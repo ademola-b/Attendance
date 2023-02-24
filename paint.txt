@@ -1,0 +1,38 @@
+﻿class RPSCustomPainter extends CustomPainter{
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    
+    
+
+  Paint paint0 = Paint()
+      ..color = const Color.fromARGB(255, 33, 150, 243)
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 1.0;
+     
+         
+    Path path0 = Path();
+    path0.moveTo(size.width*0.0006667,size.height*-0.0001406);
+    path0.quadraticBezierTo(size.width*0.0116389,size.height*0.1401719,size.width*0.1878056,size.height*0.1595781);
+    path0.cubicTo(size.width*0.2707222,size.height*0.1712188,size.width*0.3367500,size.height*0.0933750,size.width*0.4947222,size.height*0.0995781);
+    path0.cubicTo(size.width*0.5916944,size.height*0.1121094,size.width*0.5736667,size.height*0.1817813,size.width*0.7538889,size.height*0.2062187);
+    path0.quadraticBezierTo(size.width*0.8899167,size.height*0.2114531,size.width,0);
+    path0.lineTo(size.width*0.0006667,size.height*-0.0001406);
+    path0.close();
+
+    canvas.drawPath(path0, paint0);
+  
+    
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+  
+}
+
+child: CustomPaint(
+  size: Size(WIDTH,(WIDTH*1.7777777777777777).toDouble()), //You can Replace [WIDTH] with your desired width for Custom Paint and height will be calculated automatically
+  painter: RPSCustomPainter(),
+),
