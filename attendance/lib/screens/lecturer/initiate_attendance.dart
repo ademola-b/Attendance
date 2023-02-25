@@ -19,9 +19,13 @@ class InitiateAttendance extends StatefulWidget {
 }
 
 class _InitiateAttendanceState extends State<InitiateAttendance> {
-  List dept = [];
-  List lct = [];
-  late String _lat, _lon, _rad, _date, _stme, _entime, _dept, _course;
+  // List dept = [];
+  Map lct = {};
+  Map deptL = {};
+
+  DeptResponse? dpt;
+  late String _lat, _lon, _rad, _date, _stme, _entime;
+  late int _dept, _course;
 
   TextEditingController startInput = TextEditingController();
   TextEditingController endInput = TextEditingController();
@@ -96,13 +100,12 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
     List<DeptResponse> deptList = await RemoteService().getDepartmentList();
     if (deptList.isNotEmpty) {
       setState(() {
-        // for (var name in _deptList) {
-        //   dept.add(name.deptName);
-        // }
-        dept = deptList;
+        for (var element in deptList) {
+          deptL[element.id] = element.deptName;
+        }
       });
     }
-
+    // print("Department List: $deptL");
     return [];
   }
 
@@ -111,7 +114,7 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
     if (lect.isNotEmpty) {
       setState(() {
         for (var course in lect) {
-          lct.add(course.courseId);
+          lct[course.courseId.id] = course.courseId.courseCode;
         }
       });
     }
@@ -119,14 +122,14 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
     return [];
   }
 
-  Future<AttendanceSlotCreationResponse> _slotCreation() async {
-    AttendanceSlotCreationResponse slot = await RemoteService().slotCreation(
+  Future<AttendanceSlotCreationResponse?> _slotCreation() async {
+    AttendanceSlotCreationResponse? slot = await RemoteService().slotCreation(
         date: DateTime.parse(_date),
         latitude: _lat,
         longitude: _lon,
         radius: _rad,
-        departmentId: int.parse(_dept),
-        courseId: int.parse(_course),
+        departmentId: _dept,
+        courseId: _course,
         startTime: _stme,
         endTime: _entime,
         status: 'ongoing');
@@ -248,16 +251,20 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                             onChanged: (newVal) {
                               setState(() {
                                 dropdownvalue = newVal!;
-                                print(dropdownvalue['deptName']);
                               });
                             },
-                            dropdownMenuItemList: dept
-                                .map((e) => DropdownMenuItem(
-                                    value: e['deptName'],
-                                    child: DefaultText(
-                                      size: 13,
-                                      text: e['deptName'],
-                                    )))
+                            dropdownMenuItemList: deptL
+                                .map((key, value) {
+                                  return MapEntry(
+                                      key,
+                                      DropdownMenuItem(
+                                          value: key,
+                                          child: DefaultText(
+                                            size: 15.0,
+                                            text: value.toString(),
+                                          )));
+                                })
+                                .values
                                 .toList(),
                             text: 'Department',
                           ),
@@ -269,15 +276,21 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                             onChanged: (newVal) {
                               setState(() {
                                 dropdownvalue1 = newVal!;
+                                
                               });
                             },
                             dropdownMenuItemList: lct
-                                .map((e) => DropdownMenuItem(
-                                    value: e,
-                                    child: DefaultText(
-                                      size: 13,
-                                      text: e,
-                                    )))
+                                .map((key, value) {
+                                  return MapEntry(
+                                      key,
+                                      DropdownMenuItem(
+                                          value: key,
+                                          child: DefaultText(
+                                            size: 15.0,
+                                            text: value.toString(),
+                                          )));
+                                })
+                                .values
                                 .toList(),
                             text: 'Course Code',
                             onSaved: (newVal) {

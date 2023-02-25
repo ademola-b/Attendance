@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 def profile_picture_dir(instance, filename):
-    return '{0}/{1}'.format(instance.user_id.username, filename)
+    return '{0}/{1}/{2}'.format('images', instance.user_id.username, filename)
 
 # Create your models here.
 level_choices = [

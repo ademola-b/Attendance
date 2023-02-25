@@ -207,7 +207,7 @@ class RemoteService {
   }
 
 //Slot Creation
-  Future<AttendanceSlotCreationResponse> slotCreation(
+  Future<AttendanceSlotCreationResponse?> slotCreation(
       {required DateTime date,
       required String startTime,
       required String endTime,
@@ -220,7 +220,7 @@ class RemoteService {
     var box = await Hive.openBox('usertoken');
     String token = box.get('token');
     var data = jsonEncode({
-      "date": date,
+      "date": date.toIso8601String(),
       "start_time": startTime,
       "end_time": endTime,
       "longitude": longitude,
@@ -234,11 +234,15 @@ class RemoteService {
       'Content-Type': 'application/json; charset=UTF-8',
       "Authorization": "Token $token"
     });
-    if (response.statusCode == 200) {
-      final slot = attendanceSlotCreationResponseFromJson(response.body);
-      return slot;
-    } else {
-      throw Exception("Failed to create slot");
+    try {
+      if (response.statusCode == 201) {
+        final slot = attendanceSlotCreationResponseFromJson(response.body);
+        return slot;
+      } else {
+        throw Exception("Failed to create slot");
+      }
+    } catch (e) {
+      print("An error occurred while initializing slot: $e");
     }
   }
 }

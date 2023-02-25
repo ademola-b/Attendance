@@ -8,7 +8,7 @@ class DefaultDropDown extends StatefulWidget {
   final Function(dynamic) onSaved;
   final String? Function(dynamic)? validator;
   final String text;
-  final String? value;
+  final dynamic value;
   final ValueChanged<dynamic> onChanged;
   final List<DropdownMenuItem<dynamic>> dropdownMenuItemList;
   const DefaultDropDown(
@@ -17,7 +17,9 @@ class DefaultDropDown extends StatefulWidget {
       required this.onChanged,
       required this.dropdownMenuItemList,
       this.value,
-      required this.text, required this.onSaved, this.validator});
+      required this.text,
+      required this.onSaved,
+      this.validator});
 
   @override
   State<DefaultDropDown> createState() => _DefaultDropDownState();
