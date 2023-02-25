@@ -136,14 +136,42 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
     return slot;
   }
 
+  _reset() async {
+    startInput.text = "";
+    endInput.text = "";
+    latController.text = "";
+    lonController.text = "";
+    radController.text = "";
+  }
+
   submit() async {
     var isValid = _form.currentState!.validate();
     if (!isValid) return; //do not nothing if is not valid
     //else
     _form.currentState!.save(); //save current state of form
     await _slotCreation();
+
     //display message
-    print("Submitted");
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: const DefaultText(
+                size: 20.0,
+                text: "Slot initiated successfully",
+                color: Colors.green,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const DefaultText(
+                    size: 15.0,
+                    text: "Ok",
+                  ),
+                )
+              ],
+            ));
+    _reset();
+    Navigator.popAndPushNamed(context, '/lecturerNav');
   }
 
   @override
@@ -276,7 +304,6 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                             onChanged: (newVal) {
                               setState(() {
                                 dropdownvalue1 = newVal!;
-                                
                               });
                             },
                             dropdownMenuItemList: lct
