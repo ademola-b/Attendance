@@ -152,7 +152,7 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
     await _slotCreation();
 
     //display message
-    showDialog(
+    await showDialog(
         context: context,
         builder: (context) => AlertDialog(
               content: const DefaultText(

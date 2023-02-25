@@ -27,9 +27,12 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
 
   updateSeconds() {
     timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (mounted) {
       setState(() {
         indicatorValue = DateTime.now().second / 60;
-      });
+      });  
+      }
+      
     });
   }
 
