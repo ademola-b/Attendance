@@ -28,25 +28,23 @@ class _ReportFormState extends State<ReportForm> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const DefaultText(
-                    size: 15,
-                    text: "Include Performance \n Percent",
-                    align: TextAlign.center,
-                  ),
-                  Switch(
-                      value: percent,
-                      onChanged: (value) {
-                        setState(() {
-                          percent = value;
-                        });
-                        print(percent);
-                      })
-                ],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const DefaultText(
+                  size: 15,
+                  text: "Include Performance \n Percent",
+                  align: TextAlign.center,
+                ),
+                Switch(
+                    value: percent,
+                    onChanged: (value) {
+                      setState(() {
+                        percent = value;
+                      });
+                      print(percent);
+                    })
+              ],
             ),
             const SizedBox(height: 20.0),
             Expanded(

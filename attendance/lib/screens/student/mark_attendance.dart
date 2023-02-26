@@ -22,7 +22,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   MLService _mlService = locator<MLService>();
   FaceDetectorService _mlKitService = locator<FaceDetectorService>();
   CameraService _cameraService = locator<CameraService>();
-  late Future<List<AttendanceSlot?>> futureAttendanceSlot;
+  late Future<List<AttendanceSlotResponse?>> futureAttendanceSlot;
 
   late List<StudentFace?>? stdFace;
   List? face = [];
@@ -57,140 +57,154 @@ class _MarkAttendanceState extends State<MarkAttendance> {
     Size size = MediaQuery.of(context).size;
     return SafeArea(
       child: Scaffold(
-        body: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              right: 0,
-              child: CustomPaint(
-                size: Size(size.width, 500),
-                painter: MarkAttendancePaint(),
-              ),
-            ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 70.0, left: 10.0, right: 10.0, bottom: 10.0),
-                child: Column(
-                  // mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DefaultText(
-                      size: 20.0,
-                      text: "Mark Attendance",
-                      color: Constants.primaryColor,
-                    ),
-                    const SizedBox(height: 25.0),
-                    face!.isNotEmpty
-                        ? Container()
-                        : GestureDetector(
-                            onTap: () async {
-                              Navigator.pushNamed(context, '/registerFace');
-                            },
-                            child: Container(
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 30.0),
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10.0)),
-                                color: Colors.redAccent,
-                              ),
-                              child: const ListTile(
-                                title: Text('Register Face'),
-                                trailing: Icon(FontAwesomeIcons.angleRight),
-                              ),
-                            ),
-                          ),
-                    const SizedBox(height: 20.0),
-                    //card to mark attendance
-                    GestureDetector(
-                      onTap: () {
-                        face!.isEmpty
-                            ? showDialog(
-                                barrierDismissible: false,
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text("Register Face"),
-                                  content: const Text(
-                                      "Oops!, You need to register your face before you can take attendance"),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text('OK'))
-                                  ],
-                                ),
-                              )
-                            : Navigator.pushNamed(
-                                context, '/markAttendanceFace');
-                      },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 30.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          color: Constants.backgroundColor,
-                        ),
-                        child: ListTile(
-                          title: const Text('Course Name'),
-                          subtitle: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: const [
-                              Text('Course Title'),
-                              Text('Time Range')
-                            ],
-                          ),
-                          trailing: const Icon(FontAwesomeIcons.angleRight),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20.0),
-                    FutureBuilder<List<AttendanceSlot?>>(
-                        future: futureAttendanceSlot,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            var slots = snapshot.data;
-                            var format = DateFormat("HH:mm");
-                            var now = DateTime.now();
-                            // var start = format.parse(slots[0]!.startTime);
-                            // var end = format.parse(slots[0]!.endTime);
-                            print("now - $now");
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.vertical,
-                              itemCount: slots == null ? 0 : slots.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 30.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius:
-                                        const BorderRadius.all(Radius.circular(10.0)),
-                                    color: Constants.backgroundColor,
-                                  ),
-                                  child: ListTile(
-                                    title: Text(slots![index]!.courseId),
-                                    subtitle: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      children: [
-                                        const Text('Course Title'),
-                                        Text(slots[index]!.endTime)
-                                      ],
-                                    ),
-                                    trailing: const Icon(FontAwesomeIcons.angleRight),
-                                  ),
-                                );
-                              },
-                            );
-                          } else if (snapshot.hasError) {
-                            print('no data');
-                          }
-                          return const CircularProgressIndicator();
-                        })
-                  ],
+        body: RefreshIndicator(
+          onRefresh: (() async => _getStudentFace()),
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                right: 0,
+                child: CustomPaint(
+                  size: Size(size.width, 500),
+                  painter: MarkAttendancePaint(),
                 ),
               ),
-            ),
-          ],
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      top: 70.0, left: 10.0, right: 10.0, bottom: 10.0),
+                  child: Column(
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      DefaultText(
+                        size: 20.0,
+                        text: "Mark Attendance",
+                        color: Constants.primaryColor,
+                      ),
+                      const SizedBox(height: 25.0),
+                      face!.isNotEmpty
+                          ? Container()
+                          : GestureDetector(
+                              onTap: () async {
+                                Navigator.pushNamed(context, '/registerFace');
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 30.0),
+                                decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                  color: Colors.redAccent,
+                                ),
+                                child: const ListTile(
+                                  title: Text('Register Face'),
+                                  trailing: Icon(FontAwesomeIcons.angleRight),
+                                ),
+                              ),
+                            ),
+                      const SizedBox(height: 20.0),
+
+                      //card to mark attendance
+                      GestureDetector(
+                        onTap: () {
+                          face!.isEmpty
+                              ? showDialog(
+                                  barrierDismissible: false,
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text("Register Face"),
+                                    content: const Text(
+                                        "Oops!, You need to register your face before you can take attendance"),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text('OK'))
+                                    ],
+                                  ),
+                                )
+                              : Navigator.pushNamed(
+                                  context, '/markAttendanceFace');
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 30.0),
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10.0)),
+                            color: Constants.backgroundColor,
+                          ),
+                          child: ListTile(
+                            title: const Text('Course Name'),
+                            subtitle: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: const [
+                                Text('Course Title'),
+                                Text('Time Range')
+                              ],
+                            ),
+                            trailing: const Icon(FontAwesomeIcons.angleRight),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20.0),
+                      Expanded(
+                        child: FutureBuilder<List<AttendanceSlotResponse?>>(
+                            future: futureAttendanceSlot,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                var slots = snapshot.data;
+                                var format = DateFormat("HH:mm");
+                                // var start = format.parse(slots[0]!.startTime);
+                                // var end = format.parse(slots[0]!.endTime);
+
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: slots == null ? 0 : slots.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return Container(
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 30.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(10.0)),
+                                          color: Constants.backgroundColor,
+                                        ),
+                                        child: ListTile(
+                                          title: Text(slots![index]!
+                                              .courseId
+                                              .courseCode),
+                                          subtitle: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              const Text('Course Title'),
+                                              Text(slots[index]!.endTime)
+                                            ],
+                                          ),
+                                          trailing: const Icon(
+                                              FontAwesomeIcons.angleRight),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              } else if (snapshot.hasError) {
+                                print('no data');
+                              }
+                              return const CircularProgressIndicator();
+                            }),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

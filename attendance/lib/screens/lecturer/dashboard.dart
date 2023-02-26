@@ -4,6 +4,7 @@ import 'package:attendance/components/dateContainer.dart';
 
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/components/defaultContainer.dart';
+import 'package:attendance/models/attendance_slot.dart';
 import 'package:attendance/models/userResponse.dart';
 
 import 'package:attendance/services/remoteServices.dart';
@@ -24,16 +25,26 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
   Timer? timer;
   double? indicatorValue;
   String _username = 'Loading...';
+  List<AttendanceSlotResponse>? slot;
 
   updateSeconds() {
     timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (mounted) {
-      setState(() {
-        indicatorValue = DateTime.now().second / 60;
-      });  
+        setState(() {
+          indicatorValue = DateTime.now().second / 60;
+        });
       }
-      
     });
+  }
+
+  Future<AttendanceSlotResponse?> _getSlot() async {
+    slot = await RemoteService().attendanceSlot();
+    if (slot!.isNotEmpty) {
+      setState(() {
+        print(slot);
+      });
+    }
+    return null;
   }
 
   Future<UserResponse?> _getUser() async {
@@ -49,6 +60,7 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
 
   @override
   void initState() {
+    _getSlot();
     _getUser();
     indicatorValue = DateTime.now().second / 60;
     updateSeconds();
@@ -77,13 +89,9 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
               Row(
                 children: [
                   DefaultText(size: 20.0, text: "Hello, \n\t\t\t $_username"),
-                  
                   const Spacer(),
                   DefaultText(
-                    size: 25,
-                    text: time(),
-                    color: Constants.primaryColor
-                  ),
+                      size: 25, text: time(), color: Constants.primaryColor),
                 ],
               ),
               const SizedBox(height: 20.0),
@@ -102,6 +110,24 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
               ),
               const Divider(height: 10, thickness: 2.0),
               const SizedBox(height: 20.0),
+              FutureBuilder(
+                  future: RemoteService().attendanceSlot(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      var slots = snapshot.data;
+                      return ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          itemCount: slot!.length,
+                          itemBuilder: (context, index) {
+                            return const DefaultContainer(
+                                course_name: 'Course Name',
+                                course_code: 'Course Code',
+                                end_time: 'End Time');
+                          });
+                    } else {}
+                    return const CircularProgressIndicator();
+                  }),
               const DefaultContainer(
                   course_name: 'Course Name',
                   course_code: 'Course Code',

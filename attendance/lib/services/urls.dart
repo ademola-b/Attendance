@@ -16,7 +16,7 @@ late String username;
 Uri studentDetailsUrl = Uri.parse("$base_url/students/$username/");
 
 //attendance_slot url
-Uri attendanceSlotUrl = Uri.parse("$base_url/attendance/attendance-slot/");
+Uri attendanceSlotUrl = Uri.parse("$base_url/attendance/attendance-slots/");
 
 //get username
 _getUsername() async {

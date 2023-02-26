@@ -37,15 +37,18 @@ class AttendanceSlotsView(ListAPIView):
         qs = super().get_queryset()
         request = self.request
         user = request.user
-        
+       
         if not user.is_authenticated:
             return AttendanceSlot.objects.none()
         if user.is_staff:
             return AttendanceSlot.objects.all()
         if user.user_type == 'lecturer':
             return AttendanceSlot.objects.filter(lecturer_id = request.user.lecturer)
+        # if user.user_type == 'student':
+        #     return AttendanceSlot.objects.filter(department_id__deptName = student_department)
+        
         student_department = request.user.student.department_id.deptName      
-        return qs.filter(course_id__course_code__in = request.user.student.course_title, department_id__deptName = student_department)
+        return qs.filter(course_id__course_code__in = request.user.student.course_title, department_id__deptName = student_department, status = 'ongoing')
 
 class GetAttendanceSlot(RetrieveDestroyAPIView):
     queryset = AttendanceSlot.objects.all()

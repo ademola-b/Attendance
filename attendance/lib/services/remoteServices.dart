@@ -153,7 +153,8 @@ class RemoteService {
     return null;
   }
 
-  Future<List<AttendanceSlot>> attendanceSlot() async {
+  //Attendance Slot
+  Future<List<AttendanceSlotResponse>> attendanceSlot() async {
     //get user token
     var box = await Hive.openBox('usertoken');
     String token = box.get('token');
@@ -162,8 +163,7 @@ class RemoteService {
           .get(attendanceSlotUrl, headers: {"Authorization": "Token $token"});
 
       if (response.statusCode == 200) {
-        final slots = attendanceSlotFromJson(response.body);
-        // return AttendanceSlot.fromJson(jsonDecode(response.body));
+        final slots = attendanceSlotResponseFromJson(response.body);
         return slots;
       } else {
         throw Exception("Failed to get Attendance Slot");
@@ -172,7 +172,7 @@ class RemoteService {
       print(e);
     }
 
-    return <AttendanceSlot>[];
+    return <AttendanceSlotResponse>[];
   }
 
   //get department list

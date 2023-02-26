@@ -71,7 +71,7 @@ class _PerformanceState extends State<Performance> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       DefaultText(
-                        size: 28.0,
+                        size: 25.0,
                         text: "Performance",
                         color: Constants.primaryColor,
                       ),
@@ -96,7 +96,7 @@ class _PerformanceState extends State<Performance> {
                                   value: item,
                                   child: DefaultText(
                                     text: item,
-                                    size: 20.0,
+                                    size: 18.0,
                                   ));
                             }).toList(),
                             onChanged: (newVal) {

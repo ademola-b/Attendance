@@ -24,7 +24,6 @@ class Dept(serializers.ModelSerializer):
         model = Department
         fields = '__all__'
 
-
 class AttendanceSlotViewSerializer(serializers.ModelSerializer):
     department_id = Dept()
     lecturer_id = serializers.StringRelatedField()
@@ -82,7 +81,6 @@ class AttendanceListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = ['id','slot_id', 'student_id', 'performance' ]
-
 
 
 # class AttendanceSerializer(serializers.ModelSerializer):
