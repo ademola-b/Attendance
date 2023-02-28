@@ -43,10 +43,10 @@ class AttendanceSlotsView(ListAPIView):
         if user.is_staff:
             return AttendanceSlot.objects.all()
         if user.user_type == 'lecturer':
-            return AttendanceSlot.objects.filter(lecturer_id = request.user.lecturer)
+            return AttendanceSlot.objects.filter(lecturer_id = request.user.lecturer, status = 'ongoing')
         # if user.user_type == 'student':
         #     return AttendanceSlot.objects.filter(department_id__deptName = student_department)
-        
+
         student_department = request.user.student.department_id.deptName      
         return qs.filter(course_id__course_code__in = request.user.student.course_title, department_id__deptName = student_department, status = 'ongoing')
 

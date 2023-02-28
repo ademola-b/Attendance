@@ -114,24 +114,25 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
                   future: RemoteService().attendanceSlot(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      var slots = snapshot.data;
                       return ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
                           itemCount: slot!.length,
                           itemBuilder: (context, index) {
-                            return const DefaultContainer(
-                                course_name: 'Course Name',
-                                course_code: 'Course Code',
-                                end_time: 'End Time');
+                            return Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: DefaultContainer(
+                                  course_name:
+                                      slot![index].courseId.courseTitle,
+                                  course_code:
+                                      slot![index].courseId.courseCode,
+                                  end_time: slot![index].endTime),
+                            );
                           });
                     } else {}
                     return const CircularProgressIndicator();
                   }),
-              const DefaultContainer(
-                  course_name: 'Course Name',
-                  course_code: 'Course Code',
-                  end_time: 'End Time'),
             ],
           ),
         ),
