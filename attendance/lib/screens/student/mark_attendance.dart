@@ -1,3 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:async';
+
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/locator.dart';
 import 'package:attendance/models/attendance_slot.dart';
@@ -7,6 +11,8 @@ import 'package:attendance/services/faceDetectorService.dart';
 import 'package:attendance/services/mlService.dart';
 import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
+import 'package:easy_geofencing/easy_geofencing.dart';
+import 'package:easy_geofencing/enums/geofence_status.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -27,6 +33,9 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   late List<StudentFace?>? stdFace;
   List? face = [];
 
+  StreamSubscription<GeofenceStatus>? geofenceStreamingStatus;
+  String geofenceStatus = '';
+
   _getStudentFace() async {
     stdFace = await RemoteService().studentFace();
     if (stdFace != null) {
@@ -36,6 +45,37 @@ class _MarkAttendanceState extends State<MarkAttendance> {
         }
       });
     }
+  }
+
+  startStreaming(String latitude, String longitude, String radius) async {
+    EasyGeofencing.startGeofenceService(
+        pointedLatitude: latitude,
+        pointedLongitude: longitude,
+        radiusMeter: radius,
+        eventPeriodInSeconds: 5);
+
+    geofenceStreamingStatus ??=
+        EasyGeofencing.getGeofenceStream()?.listen((GeofenceStatus status) {
+      setState(() {
+        geofenceStatus = status.toString();
+      });
+      print(geofenceStatus);
+    });
+  }
+
+  stopStreaming() {
+    EasyGeofencing.stopGeofenceService();
+    if (geofenceStreamingStatus == null) return;
+    geofenceStreamingStatus!.cancel();
+    geofenceStreamingStatus = null;
+    print("=====Streaming Stopped=====");
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    stopStreaming();
   }
 
   @override
@@ -72,12 +112,12 @@ class _MarkAttendanceState extends State<MarkAttendance> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(
-                      top: 70.0, left: 10.0, right: 10.0, bottom: 10.0),
+                      top: 100.0, left: 10.0, right: 10.0, bottom: 10.0),
                   child: Column(
                     // mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       DefaultText(
-                        size: 20.0,
+                        size: 25.0,
                         text: "Mark Attendance",
                         color: Constants.primaryColor,
                       ),
@@ -155,18 +195,43 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                               if (snapshot.hasData) {
                                 var slots = snapshot.data;
                                 var format = DateFormat("HH:mm");
-                                // var start = format.parse(slots[0]!.startTime);
-                                // var end = format.parse(slots[0]!.endTime);
 
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    itemCount: slots == null ? 0 : slots.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Container(
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  scrollDirection: Axis.vertical,
+                                  itemCount: slots == null ? 0 : slots.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return GestureDetector(
+                                      onTap: () async {
+                                        face!.isEmpty
+                                            ? Constants.DialogBox(
+                                                context,
+                                                "Oops!, You need to register your face before you can take attendance",
+                                                Colors.amber,
+                                                Icons.camera)
+                                            : await startStreaming(
+                                                slots![index]!.latitude,
+                                                slots[index]!.longitude,
+                                                slots[index]!.radius);
+
+                                        if (geofenceStatus ==
+                                            'GeofenceStatus.exit') {
+                                          await Constants.DialogBox(
+                                              context,
+                                              "Oops!, You are not in the class range",
+                                              Colors.red[700],
+                                              Icons.location_off_outlined);
+                                          // Navigator.popAndPushNamed(
+                                          //     context, '/studentNav');
+                                        } else if (geofenceStatus ==
+                                            'GeofenceStatus.enter') {
+                                          Navigator.pushNamed(
+                                              context, '/markAttendanceFace');
+                                        }
+                                      },
+                                      child: Container(
+                                        width: size.width,
                                         margin: const EdgeInsets.symmetric(
                                             horizontal: 30.0),
                                         decoration: BoxDecoration(
@@ -175,23 +240,42 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                           color: Constants.backgroundColor,
                                         ),
                                         child: ListTile(
-                                          title: Text(slots![index]!
-                                              .courseId
-                                              .courseCode),
+                                          title: DefaultText(
+                                            text: slots![index]!
+                                                .courseId
+                                                .courseCode,
+                                            size: 17.0,
+                                          ),
                                           subtitle: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceAround,
                                             children: [
-                                              const Text('Course Title'),
-                                              Text(slots[index]!.endTime)
+                                              DefaultText(
+                                                text: slots[index]!
+                                                    .courseId
+                                                    .courseTitle,
+                                                size: 15.0,
+                                              ),
+                                              const Spacer(),
+                                              Column(
+                                                children: [
+                                                  const DefaultText(
+                                                      text: "Time Ending",
+                                                      size: 15.0),
+                                                  DefaultText(
+                                                      text:
+                                                          slots[index]!.endTime,
+                                                      size: 15.0),
+                                                ],
+                                              )
                                             ],
                                           ),
                                           trailing: const Icon(
                                               FontAwesomeIcons.angleRight),
                                         ),
-                                      );
-                                    },
-                                  ),
+                                      ),
+                                    );
+                                  },
                                 );
                               } else if (snapshot.hasError) {
                                 print('no data');

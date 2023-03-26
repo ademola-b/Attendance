@@ -103,7 +103,7 @@ class RemoteService {
           },
           body: body);
 
-      print(response.body);
+      // print(response.body);
 
       if (response.statusCode == 201) {
         return StudentFace.fromJson(json.decode(response.body));
@@ -111,8 +111,7 @@ class RemoteService {
         throw Exception('Failed to register face');
       }
     } catch (e) {
-      print(e);
-      print('An error occurred saving face');
+      print("An error occurred saving face: $e");
     }
   }
 

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:attendance/components/face_auth/image_converted.dart';
+// import 'package:attendance/components/face_auth/image_converted.dart';
 import 'package:attendance/models/studentFace.dart';
 import 'package:attendance/services/image_converter.dart';
 import 'package:attendance/services/remoteServices.dart';
@@ -13,7 +13,7 @@ import 'package:image/image.dart' as imglib;
 
 class MLService {
   Interpreter? _interpreter;
-  double threshold = 0.5; //1 seems too high
+  double threshold = 0.7; //1.0 seems too high
 
   late List _predictedData;
   List get predictedData => _predictedData; //getter method

@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-String base_url = 'http://192.168.43.130:8000';
+// String base_url = 'http://192.168.43.130:8000';
+String base_url = 'http://192.168.43.183:38057';
 
 //login url
 Uri loginUrl = Uri.parse("$base_url/accounts/login/");
