@@ -32,6 +32,11 @@ class AttendanceSlotViewSerializer(serializers.ModelSerializer):
         model = AttendanceSlot
         fields = '__all__'
 
+class AttendanceSlotUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendanceSlot
+        fields = ['status']    
+
 class AttendanceSlotCreateSerializer(serializers.ModelSerializer):
     # course_id = serializers.SlugRelatedField(slug_field='course_code', read_only=True)
     # department_id = Dept()

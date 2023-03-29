@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/locator.dart';
+import 'package:attendance/models/attendance.dart';
 import 'package:attendance/models/attendance_slot.dart';
 import 'package:attendance/models/studentFace.dart';
 import 'package:attendance/services/cameraService.dart';
@@ -16,6 +17,7 @@ import 'package:easy_geofencing/enums/geofence_status.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MarkAttendance extends StatefulWidget {
   const MarkAttendance({Key? key}) : super(key: key);
@@ -35,6 +37,9 @@ class _MarkAttendanceState extends State<MarkAttendance> {
 
   StreamSubscription<GeofenceStatus>? geofenceStreamingStatus;
   String geofenceStatus = '';
+
+
+  
 
   _getStudentFace() async {
     stdFace = await RemoteService().studentFace();
@@ -81,6 +86,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   @override
   void initState() {
     futureAttendanceSlot = RemoteService().attendanceSlot();
+
     _getStudentFace();
     super.initState();
     _initializeServices();
@@ -98,7 +104,12 @@ class _MarkAttendanceState extends State<MarkAttendance> {
     return SafeArea(
       child: Scaffold(
         body: RefreshIndicator(
-          onRefresh: (() async => _getStudentFace()),
+          onRefresh: (() async {
+            await stopStreaming();
+            await _getStudentFace();
+            await futureAttendanceSlot;
+            return;
+          }),
           child: Stack(
             children: [
               Positioned(
@@ -145,55 +156,57 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                       const SizedBox(height: 20.0),
 
                       //card to mark attendance
-                      GestureDetector(
-                        onTap: () {
-                          face!.isEmpty
-                              ? showDialog(
-                                  barrierDismissible: false,
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text("Register Face"),
-                                    content: const Text(
-                                        "Oops!, You need to register your face before you can take attendance"),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: const Text('OK'))
-                                    ],
-                                  ),
-                                )
-                              : Navigator.pushNamed(
-                                  context, '/markAttendanceFace');
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 30.0),
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(10.0)),
-                            color: Constants.backgroundColor,
-                          ),
-                          child: ListTile(
-                            title: const Text('Course Name'),
-                            subtitle: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: const [
-                                Text('Course Title'),
-                                Text('Time Range')
-                              ],
-                            ),
-                            trailing: const Icon(FontAwesomeIcons.angleRight),
-                          ),
-                        ),
-                      ),
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     face!.isEmpty
+                      //         ? showDialog(
+                      //             barrierDismissible: false,
+                      //             context: context,
+                      //             builder: (context) => AlertDialog(
+                      //               title: const Text("Register Face"),
+                      //               content: const Text(
+                      //                   "Oops!, You need to register your face before you can take attendance"),
+                      //               actions: [
+                      //                 TextButton(
+                      //                     onPressed: () =>
+                      //                         Navigator.pop(context),
+                      //                     child: const Text('OK'))
+                      //               ],
+                      //             ),
+                      //           )
+                      //         : Navigator.pushNamed(
+                      //             context, '/markAttendanceFace');
+                      //   },
+                      //   child: Container(
+                      //     margin: const EdgeInsets.symmetric(horizontal: 30.0),
+                      //     decoration: BoxDecoration(
+                      //       borderRadius:
+                      //           const BorderRadius.all(Radius.circular(10.0)),
+                      //       color: Constants.backgroundColor,
+                      //     ),
+                      //     child: ListTile(
+                      //       title: const Text('Course Name'),
+                      //       subtitle: Row(
+                      //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      //         children: const [
+                      //           Text('Course Title'),
+                      //           Text('Time Range')
+                      //         ],
+                      //       ),
+                      //       trailing: const Icon(FontAwesomeIcons.angleRight),
+                      //     ),
+                      //   ),
+                      // ),
 
-                      const SizedBox(height: 20.0),
+                      // const SizedBox(height: 20.0),
+
                       Expanded(
                         child: FutureBuilder<List<AttendanceSlotResponse?>>(
                             future: futureAttendanceSlot,
                             builder: (context, snapshot) {
                               if (snapshot.hasData) {
                                 var slots = snapshot.data;
+
                                 var format = DateFormat("HH:mm");
 
                                 return ListView.builder(
@@ -227,7 +240,10 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                         } else if (geofenceStatus ==
                                             'GeofenceStatus.enter') {
                                           Navigator.pushNamed(
-                                              context, '/markAttendanceFace');
+                                              context, '/markAttendanceFace',
+                                              arguments: {
+                                                'slot_id': slots![index]!.id
+                                              });
                                         }
                                       },
                                       child: Container(
@@ -243,7 +259,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                           title: DefaultText(
                                             text: slots![index]!
                                                 .courseId
-                                                .courseCode,
+                                                .courseTitle,
                                             size: 17.0,
                                           ),
                                           subtitle: Row(
@@ -253,7 +269,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                               DefaultText(
                                                 text: slots[index]!
                                                     .courseId
-                                                    .courseTitle,
+                                                    .courseCode,
                                                 size: 15.0,
                                               ),
                                               const Spacer(),

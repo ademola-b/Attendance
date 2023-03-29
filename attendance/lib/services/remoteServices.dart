@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:attendance/components/defaultText.dart';
+import 'package:attendance/models/attendance.dart';
 import 'package:attendance/models/attendance_slot.dart';
 import 'package:attendance/models/attendance_slot_creation_response.dart';
 import 'package:attendance/models/departments_response.dart';
@@ -172,6 +173,54 @@ class RemoteService {
     }
 
     return <AttendanceSlotResponse>[];
+  }
+
+  //Mark Attendance
+  static Future<Attendance?>? markAttendance(context, int slot_id) async {
+    var box = await Hive.openBox('usertoken');
+    String token = box.get('token');
+    // var data = jsonEncode({});
+    try {
+     
+      var response = await http
+          .post(Uri.parse("$base_url/attendance/$slot_id/"), headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        "Authorization": "Token $token"
+      });
+      if (response.statusCode == 201) {
+        return attendanceFromJson(response.body);
+      } else {
+        throw Exception("Failed to mark attendance");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: DefaultText(text: "Server Error: $e", size: 15.0)));
+    }
+
+    return null;
+  }
+
+  //getMarkedAttendance
+  static Future<List<Attendance>?> getMarkedAttendance(
+      context, int slot_id) async {
+    var box = await Hive.openBox('usertoken');
+    String token = box.get('token');
+
+    try {
+      http.Response response =
+          await http.get(Uri.parse("$base_url/attendance/$slot_id/"), headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        "Authorization": "Token $token"
+      });
+      if (response.statusCode == 200) {
+        return attendanceListFromJson(response.body);
+      } else {
+        throw Exception("Failed to get marked attendance");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: DefaultText(text: "Server Error: $e", size: 15.0)));
+    }
   }
 
   //get department list

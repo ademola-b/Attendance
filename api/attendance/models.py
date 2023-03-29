@@ -31,5 +31,5 @@ class Performance(models.Model):
     attendance = models.ForeignKey("attendance.Attendance", verbose_name=_("Attendance"), on_delete=models.CASCADE)
     student = models.ForeignKey("students.Student", verbose_name=_("Student"), on_delete=models.CASCADE)
     course = models.ForeignKey("students.Course", verbose_name=_("Course"), on_delete=models.CASCADE)
-    perf = models.FloatField(_(""))
+    perf = models.FloatField(null=True, blank=True)
     

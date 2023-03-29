@@ -1,7 +1,9 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-// String base_url = 'http://192.168.43.130:8000';
-String base_url = 'http://192.168.43.183:38057';
+// String base_url = 'http://192.168.43.182:42845';
+// String base_url = 'http://192.168.43.130:32875';
+// String base_url = 'http://192.168.199.182:8000';
+String base_url = 'http://192.168.43.182:35835';
 
 //login url
 Uri loginUrl = Uri.parse("$base_url/accounts/login/");
@@ -17,7 +19,10 @@ late String username;
 Uri studentDetailsUrl = Uri.parse("$base_url/students/$username/");
 
 //attendance_slot url
-Uri attendanceSlotUrl = Uri.parse("$base_url/attendance/attendance-slots/");
+Uri attendanceSlotUrl = Uri.parse("$base_url/attendance/slots/");
+
+//attendance_slot url
+Uri markAttendanceUrl = Uri.parse("$base_url/attendance/");
 
 //get username
 _getUsername() async {

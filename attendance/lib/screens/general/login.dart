@@ -28,6 +28,10 @@ class _LoginState extends State<Login> {
   }
 
   void _login() async {
+
+    //update attendance slot
+    
+
     var isValid = _form.currentState!.validate();
     if (!isValid) {
       return;

@@ -90,8 +90,8 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
       });
 
     case "/markAttendanceFace":
-      return MaterialPageRoute(builder: (context) {
-        return const MarkAttendanceFace(); //to mark attendance
+      return MaterialPageRoute(settings: settings, builder: (context) {
+        return MarkAttendanceFace(settings.arguments); //to mark attendance
       });
 
     case "/initiate_attendance":

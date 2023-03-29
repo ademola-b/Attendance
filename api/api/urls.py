@@ -26,3 +26,6 @@ urlpatterns = [
     # path('registration/', include('dj_rest_auth.registration.urls')),
     # path('account/', include('allauth.urls'))
 ]
+
+admin.site.site_header = "Attendance"
+admin.site.index_title = "Attendance"

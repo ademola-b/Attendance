@@ -1,9 +1,29 @@
+from datetime import datetime, time
+
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.generics import ListAPIView,  ListCreateAPIView, RetrieveDestroyAPIView
+from rest_framework.generics import (ListAPIView,  ListCreateAPIView, 
+                                     UpdateAPIView, RetrieveDestroyAPIView)
+from rest_framework.response import Response
 from . models import AttendanceSlot, Attendance
-from . serializers import AttendanceSlotCreateSerializer, AttendanceSlotViewSerializer, AttendanceSerializer, AttendanceListSerializer
+from . serializers import (AttendanceSlotCreateSerializer, 
+                           AttendanceSlotViewSerializer, AttendanceSlotUpdateSerializer,
+                           AttendanceSerializer, AttendanceListSerializer)
 # Create your views here.
+
+def TimeDiff(end_time):
+    current_time = datetime.now().strftime("%H:%M:%S")
+    # print(type(current_time))
+    end_time = str(end_time)
+    t1 = datetime.strptime(end_time, "%H:%M:%S")
+    t2 = datetime.strptime(current_time, "%H:%M:%S")
+    time_diff = t2 - t1
+    if time_diff.total_seconds() >= 60:
+        return True
+    else:
+        return False
+
+
 
 #view to create attendance slot
 class AttendanceSlotCreate(ListCreateAPIView):
@@ -66,6 +86,46 @@ class GetAttendanceSlot(RetrieveDestroyAPIView):
             return AttendanceSlot.objects.filter(lecturer_id = request.user.lecturer)
         student_department = request.user.student.department_id.deptName
         return qs.filter(course_id__course_code__in = request.user.student.course_title, department_id__deptName = student_department)
+    
+    
+    
+    # def update(self, request, *args, **kwargs):
+    #     data = request.data
+    #     # qs = AttendanceSlot.objects.filter(status = 'ongoing')
+    #     print(f"data: {data}")
+    #     data_stat = AttendanceSlot.objects.filter(status = 'ongoing')
+    #     data_stat.status = 'elapsed'
+    #     data_stat = AttendanceSlot.objects.update('elapsed', ['status'])
+    #     # data_stat = AttendanceSlot.objects.update(status = 'elapsed')
+
+    #     serializer = AttendanceSlotViewSerializer(data = data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status = status.HTTP_204_NO_CONTENT)
+    #     else:
+    #         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+class UpdateAttendanceSlot(UpdateAPIView):
+    queryset = AttendanceSlot.objects.all()
+    serializer_class = AttendanceSlotUpdateSerializer
+
+
+    def put(self, request, *args, **kwargs):
+        try:
+            queryset = AttendanceSlot.objects.filter(status='ongoing')
+        except AttendanceSlot.DoesNotExist:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+        for instance in queryset:
+            print(type(instance.end_time))
+            time_diff = TimeDiff(instance.end_time)
+            if time_diff:
+                serializer = self.serializer_class(instance, data = request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     
 
 class AttendanceList(ListAPIView):

@@ -3,10 +3,12 @@ import 'package:attendance/components/face_auth/widgets/face_painter.dart';
 import 'package:attendance/components/face_auth/widgets/mark_attendance_plugs.dart';
 import 'package:attendance/components/face_auth/widgets/single_picture.dart';
 import 'package:attendance/locator.dart';
+import 'package:attendance/models/attendance.dart';
 import 'package:attendance/models/studentFace.dart';
 import 'package:attendance/services/cameraService.dart';
 import 'package:attendance/services/faceDetectorService.dart';
 import 'package:attendance/services/mlService.dart';
+import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,11 @@ import 'package:flutter/material.dart';
 // import 'dart:math' as math;
 
 class MarkAttendanceFace extends StatefulWidget {
-  const MarkAttendanceFace({Key? key}) : super(key: key);
+  final arguments;
+  const MarkAttendanceFace(
+    Object? this.arguments, {
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<MarkAttendanceFace> createState() => _MarkAttendanceFaceState();
@@ -28,10 +34,22 @@ class _MarkAttendanceFaceState extends State<MarkAttendanceFace> {
   bool _isInitializing = false;
   bool _isPictureTaken = false;
 
+  List<Attendance?>? markedAtt = [];
+
+  Future<List<Attendance>?> _getMarkedAttendance(int slot_id) async {
+    List<Attendance>? _att =
+        await RemoteService.getMarkedAttendance(context, slot_id);
+    if (_att != null) {
+      return _att;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
     _start();
+    print("Widget data: ${widget.arguments}");
   }
 
   @override
@@ -97,32 +115,29 @@ class _MarkAttendanceFaceState extends State<MarkAttendanceFace> {
   }
 
   Future<void> onTap() async {
-    await takePicture();
-    if (_faceDetectorService.faceDetected) {
-      StudentFace? stdFace = await _mlService.predict();
-      if (stdFace != null) {
-        showDialog(
-            context: context,
-            builder: (builder) => const AlertDialog(
-                  content: DefaultText(
-                    size: 18,
-                    text: 'Attendance Marked',
-                    color: Colors.green,
-                  ),
-                  actions: [],
-                ));
-      } else {
-        showDialog(
-            context: context,
-            builder: (builder) => const AlertDialog(
-                  content: DefaultText(
-                    size: 18,
-                    text: 'Unrecognized Face!',
-                    color: Colors.red,
-                    weight: FontWeight.bold,
-                  ),
-                ));
+    List<Attendance>? _att = await RemoteService.getMarkedAttendance(
+        context, widget.arguments['slot_id']);
+    if (_att != null && _att.isEmpty) {
+      await takePicture();
+      if (_faceDetectorService.faceDetected) {
+        StudentFace? stdFace = await _mlService.predict();
+        if (stdFace != null) {
+          Attendance? markAtt = await RemoteService.markAttendance(
+              context, widget.arguments['slot_id']);
+
+          markAtt != null
+              ? Constants.DialogBox(context, "Attendance Marked", Colors.white,
+                  Icons.check_circle_outline)
+              : Constants.DialogBox(context, "An error occured", Colors.amber,
+                  Icons.warning_amber_rounded);
+        } else {
+          Constants.DialogBox(context, "Unrecognized Face!",
+          Colors.amber, Icons.warning_amber_outlined);
+        }
       }
+    } else {
+      Constants.DialogBox(context, "You've marked attendance already",
+          Colors.amber, Icons.warning_amber_outlined);
     }
   }
 
