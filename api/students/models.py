@@ -40,7 +40,7 @@ class Student(models.Model):
     department_id = models.ForeignKey(Department, on_delete=models.CASCADE)
     level = models.CharField(max_length=5, choices=level_choices, default='100')
     # level_id = models.ForeignKey(Level, on_delete=models.CASCADE)
-    course_title = ArrayField(base_field=models.CharField(max_length=20), null = True)
+    courses = ArrayField(base_field=models.CharField(max_length=20), null = True)
 
     def __str__(self):
         return self.user_id.username

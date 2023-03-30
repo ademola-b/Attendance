@@ -2,8 +2,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
-class LectureRoom:
-    pass
 
 class AttendanceSlot(models.Model):
     department_id = models.ForeignKey("students.Department", verbose_name=_("department id"), on_delete=models.CASCADE)
@@ -28,8 +26,9 @@ class Attendance(models.Model):
         return '{0} - {1}'.format("attendance for ", self.slot_id)
 
 class Performance(models.Model):
-    attendance = models.ForeignKey("attendance.Attendance", verbose_name=_("Attendance"), on_delete=models.CASCADE)
+    # attendance = models.ForeignKey("attendance.Attendance", verbose_name=_("Attendance"), on_delete=models.CASCADE)
     student = models.ForeignKey("students.Student", verbose_name=_("Student"), on_delete=models.CASCADE)
-    course = models.ForeignKey("students.Course", verbose_name=_("Course"), on_delete=models.CASCADE)
-    perf = models.FloatField(null=True, blank=True)
+    # course = models.ForeignKey("students.Course", verbose_name=_("Course"), on_delete=models.CASCADE)
+    course = models.CharField(verbose_name=_("Course"), max_length=10)
+    performance_percent = models.FloatField(null=True, blank=True)
     

@@ -5,7 +5,9 @@ from rest_framework import status
 from rest_framework.generics import (ListAPIView,  ListCreateAPIView, 
                                      UpdateAPIView, RetrieveDestroyAPIView)
 from rest_framework.response import Response
-from . models import AttendanceSlot, Attendance
+
+from students.models import Course
+from . models import AttendanceSlot, Attendance, Performance
 from . serializers import (AttendanceSlotCreateSerializer, 
                            AttendanceSlotViewSerializer, AttendanceSlotUpdateSerializer,
                            AttendanceSerializer, AttendanceListSerializer)
@@ -85,7 +87,7 @@ class GetAttendanceSlot(RetrieveDestroyAPIView):
         if user.user_type == 'lecturer':
             return AttendanceSlot.objects.filter(lecturer_id = request.user.lecturer)
         student_department = request.user.student.department_id.deptName
-        return qs.filter(course_id__course_code__in = request.user.student.course_title, department_id__deptName = student_department)
+        return qs.filter(course_id__course_code__in = request.user.student.courses, department_id__deptName = student_department)
     
     
     
@@ -126,18 +128,36 @@ class UpdateAttendanceSlot(UpdateAPIView):
                 return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    
-
 class AttendanceList(ListAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceListSerializer
 
-class Attendance(ListCreateAPIView):
+class AttendanceCreate(ListCreateAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
     def perform_create(self, serializer):
         serializer.save(student_id = self.request.user.student)
+        courses = Course.objects.all()
+        present = Attendance.objects.filter(student_id = self.request.user.student, slot_id__course_id__course_code__in = self.request.user.student.courses).count()
+        course = Attendance.objects.filter(slot_id__course_id__course_code__in = self.request.user.student.courses)[0]
+    
+        print(f"course: {course.slot_id.course_id.course_code}")
+        # for p in present:
+        print(f"present slot: {present}")
+        # print(f"present slot: {present.student_id}")
+        slot = AttendanceSlot.objects.filter(course_id__course_code = course.slot_id.course_id.course_code).count()
+        print(f"slot: {slot}")
+        performance = present/slot * 100
+        print(f"present: {present}\n slot: {slot}\n performance: {performance}")
+        # Performance.objects.create(student = request.user.student, course=, performance_percent = performance)
+        perf = {'performance_percent':performance,}
+        Performance.objects.update_or_create(
+                                            student = self.request.user.student, 
+                                            course = course.slot_id.course_id.course_code, 
+                                            # course__in = self.request.user.student.courses, 
+                                            defaults=perf)
+
         return super().perform_create(serializer)
 
 # class Attendance(ListCreateAPIView):

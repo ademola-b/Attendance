@@ -104,7 +104,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         slot_id = self.context['view'].kwargs['slot_id']
-        
         slot = AttendanceSlot.objects.get(id=slot_id)
         return Attendance.objects.create(slot_id=slot, **validated_data)
 

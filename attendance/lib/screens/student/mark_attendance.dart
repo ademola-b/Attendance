@@ -38,9 +38,6 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   StreamSubscription<GeofenceStatus>? geofenceStreamingStatus;
   String geofenceStatus = '';
 
-
-  
-
   _getStudentFace() async {
     stdFace = await RemoteService().studentFace();
     if (stdFace != null) {
@@ -239,11 +236,23 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                           //     context, '/studentNav');
                                         } else if (geofenceStatus ==
                                             'GeofenceStatus.enter') {
-                                          Navigator.pushNamed(
-                                              context, '/markAttendanceFace',
-                                              arguments: {
-                                                'slot_id': slots![index]!.id
-                                              });
+                                          List<Attendance>? _att =
+                                              await RemoteService
+                                                  .getMarkedAttendance(context,
+                                                      slots![index]!.id);
+                                          if (_att != null && _att.isEmpty) {
+                                            Navigator.pushNamed(
+                                                context, '/markAttendanceFace',
+                                                arguments: {
+                                                  'slot_id': slots[index]!.id
+                                                });
+                                          } else {
+                                            Constants.DialogBox(
+                                                context,
+                                                "You've marked attendance already",
+                                                Colors.amber,
+                                                Icons.warning_amber_outlined);
+                                          }
                                         }
                                       },
                                       child: Container(
