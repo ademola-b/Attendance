@@ -9,6 +9,7 @@ urlpatterns = [
     path('slot/create/', views.AttendanceSlotCreate.as_view(), name='attendance_slot'), 
     path('slots/', views.AttendanceSlotsView.as_view(), name='attendance_slots'), 
     path('slot/<int:pk>/', views.GetAttendanceSlot.as_view(), name='get_attendance_slot'),    
-    path('slot/<int:pk>/update/', views.UpdateAttendanceSlot.as_view(), name='update_attendance_slot'),    
+    path('slot/<int:pk>/update/', views.UpdateAttendanceSlot.as_view(), name='update_attendance_slot'), 
+    path('performance/', views.PerformanceView.as_view(), name='performance'),  
 
 ]

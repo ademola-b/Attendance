@@ -120,12 +120,16 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
                           scrollDirection: Axis.vertical,
                           itemCount: slot!.length,
                           itemBuilder: (context, index) {
-                            return DefaultContainer(
-                                course_name: slot![index].courseId.courseTitle,
-                                course_code: slot![index].courseId.courseCode,
-                                end_time: slot![index].endTime);
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 15.0),
+                              child: DefaultContainer(
+                                  course_name:
+                                      slot![index].courseId.courseTitle,
+                                  course_code: slot![index].courseId.courseCode,
+                                  end_time: slot![index].endTime),
+                            );
                           });
-                    } else {}
+                    } 
                     return const CircularProgressIndicator();
                   }),
             ],

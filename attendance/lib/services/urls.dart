@@ -1,9 +1,9 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-// String base_url = 'http://192.168.43.182:42845';
+String base_url = 'http://192.168.43.183:40683';
 // String base_url = 'http://192.168.43.130:32875';
 // String base_url = 'http://192.168.199.182:8000';
-String base_url = 'http://192.168.43.182:35835';
+// String base_url = 'http://192.168.43.182:35835';
 
 //login url
 Uri loginUrl = Uri.parse("$base_url/accounts/login/");
@@ -41,4 +41,7 @@ Uri deptUrl = Uri.parse("$base_url/students/departments/all/");
 Uri lectUrl = Uri.parse("$base_url/lecturers/");
 
 //attendance slot creation url
-Uri slotCreUrl = Uri.parse("$base_url/attendance/attendance-slot/create/");
+Uri slotCreUrl = Uri.parse("$base_url/attendance/slot/create/");
+
+//get Performance
+Uri performanceUrl = Uri.parse("$base_url/attendance/performance/");

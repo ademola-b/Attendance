@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
-from . models import AttendanceSlot, Attendance
+from . models import AttendanceSlot, Attendance, Performance
 from students.models import Student, Course, Department
+from students.serializers import StudentMiniSerializer
 
 class AttendanceSlotMiniSerializer(serializers.ModelSerializer):
     course_id = serializers.SlugField(read_only=True)
@@ -85,7 +86,7 @@ class AttendanceListSerializer(serializers.ModelSerializer):
     slot_id = AttendanceSlotMiniSerializer(required=False, read_only=True)
     class Meta:
         model = Attendance
-        fields = ['id','slot_id', 'student_id', 'performance' ]
+        fields = ['id','student_id', 'slot_id']
 
 
 # class AttendanceSerializer(serializers.ModelSerializer):
@@ -107,4 +108,13 @@ class AttendanceSerializer(serializers.ModelSerializer):
         slot = AttendanceSlot.objects.get(id=slot_id)
         return Attendance.objects.create(slot_id=slot, **validated_data)
 
-
+class PerformanceSerializer(serializers.ModelSerializer):
+    # student = StudentMiniSerializer()
+    class Meta:
+        model = Performance
+        fields = [
+            'id',
+            'student',
+            'course',
+            'performance_percent'
+        ]

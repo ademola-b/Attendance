@@ -1,4 +1,6 @@
 import 'package:attendance/components/defaultText.dart';
+import 'package:attendance/models/performance_response.dart';
+import 'package:attendance/models/studentCourse.dart';
 import 'package:attendance/models/studentDetails.dart';
 import 'package:attendance/screens/student/bottomNavBar.dart';
 import 'package:attendance/screens/student/mark_attendance.dart';
@@ -19,18 +21,32 @@ class Performance extends StatefulWidget {
 class _PerformanceState extends State<Performance> {
   List course = [];
   var dropdownvalue;
+  double performance_percent = 0.0;
 
   Future _getStudentCourse() async {
     //get username
     var box = await Hive.openBox('userToken');
     String username = box.get('username');
-    StudentCourse? stdCourse = await RemoteService().studentCourse(username);
+    Courses? stdCourse = await RemoteService.studentCourse(username, context);
     if (stdCourse != null) {
       setState(() {
-        course = stdCourse.courseTitle;
+        course = stdCourse.courses;
         // print("course - $course");
       });
     }
+  }
+
+  Future<List<Performance>?>? _getPerformance(context, course) async {
+    var performance = await RemoteService.getPerformance(context, course);
+    if (performance != null && performance.isNotEmpty) {
+      setState(() {
+        performance_percent = performance[0].performancePercent;
+      });
+    } else {
+      Constants.DialogBox(context, "No attendance record for this course",
+          Colors.amber, Icons.info_outline_rounded);
+    }
+    return null;
   }
 
   @override
@@ -100,15 +116,22 @@ class _PerformanceState extends State<Performance> {
                                   ));
                             }).toList(),
                             onChanged: (newVal) {
+                              _getPerformance(context, newVal);
                               setState(() {
                                 dropdownvalue = newVal;
                               });
                             }),
                       ),
                       const SizedBox(height: 50),
-                      const Align(
-                          alignment: Alignment.center,
-                          child: DefaultText(size: 150.0, text: '%'))
+                      Center(
+                          child: Padding(
+                        padding: const EdgeInsets.only(left: 30.0, top: 100.0),
+                        child: DefaultText(
+                          size: 100.0,
+                          text: "$performance_percent %",
+                          align: TextAlign.center,
+                        ),
+                      ))
                     ],
                   ),
                 ),

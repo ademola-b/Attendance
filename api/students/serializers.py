@@ -8,10 +8,18 @@ class UserMiniSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ['id', 'username', 'first_name', 'last_name', 'email']
 
+class StudentMiniSerializer(serializers.ModelSerializer):
+    user_id = UserMiniSerializer(read_only=True, required = False)
+    class Meta:
+        model = Student
+        fields = [
+            'user_id'
+        ]
+
 class StudentsListSerializer(serializers.ModelSerializer):
     user_id = UserMiniSerializer(read_only=True, required = False)
     department_id = serializers.StringRelatedField()
-    course_title = serializers.ListField(child=serializers.CharField(max_length=10))
+    courses = serializers.ListField(child=serializers.CharField(max_length=10))
     profile_pic_memory = serializers.SerializerMethodField("get_image_memory")
     class Meta:
         model = Student
@@ -20,7 +28,7 @@ class StudentsListSerializer(serializers.ModelSerializer):
             'profile_pic',
             'department_id',
             'level',
-            'course_title',
+            'courses',
             'profile_pic_memory'
         ]
 
@@ -39,7 +47,7 @@ class StudentFaceSerializer(serializers.ModelSerializer):
 class StudentCourses(serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ['course_title']
+        fields = ['courses']
 
 class DepartmentsSerializer(serializers.ModelSerializer):
     class Meta:

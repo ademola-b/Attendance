@@ -1,4 +1,5 @@
 from datetime import datetime, time
+from django.http import Http404
 
 from django.shortcuts import render
 from rest_framework import status
@@ -6,11 +7,12 @@ from rest_framework.generics import (ListAPIView,  ListCreateAPIView,
                                      UpdateAPIView, RetrieveDestroyAPIView)
 from rest_framework.response import Response
 
+from lecturers.models import Lecturer
 from students.models import Course
 from . models import AttendanceSlot, Attendance, Performance
-from . serializers import (AttendanceSlotCreateSerializer, 
-                           AttendanceSlotViewSerializer, AttendanceSlotUpdateSerializer,
-                           AttendanceSerializer, AttendanceListSerializer)
+from . serializers import (AttendanceSlotCreateSerializer, AttendanceSlotViewSerializer,
+                            AttendanceSlotUpdateSerializer, AttendanceSerializer,
+                            AttendanceListSerializer, PerformanceSerializer)
 # Create your views here.
 
 def TimeDiff(end_time):
@@ -48,7 +50,7 @@ class AttendanceSlotCreate(ListCreateAPIView):
         if user.user_type == 'lecturer':
             return AttendanceSlot.objects.filter(lecturer_id = request.user.lecturer)
         student_department = request.user.student.department_id.deptName      
-        return qs.filter(course_id__course_code__in = request.user.student.course_title, department_id__deptName = student_department).order_by('-id')[:1]
+        return qs.filter(course_id__course_code__in = request.user.student.courses, department_id__deptName = student_department).order_by('-id')[:1]
 
 #to view attendance slots
 class AttendanceSlotsView(ListAPIView):
@@ -70,7 +72,7 @@ class AttendanceSlotsView(ListAPIView):
         #     return AttendanceSlot.objects.filter(department_id__deptName = student_department)
 
         student_department = request.user.student.department_id.deptName      
-        return qs.filter(course_id__course_code__in = request.user.student.course_title, department_id__deptName = student_department, status = 'ongoing')
+        return qs.filter(course_id__course_code__in = request.user.student.courses, department_id__deptName = student_department, status = 'ongoing')
 
 class GetAttendanceSlot(RetrieveDestroyAPIView):
     queryset = AttendanceSlot.objects.all()
@@ -136,29 +138,60 @@ class AttendanceCreate(ListCreateAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
+    def get_queryset(self, *args, **kwargs):
+        queryset = super().get_queryset(*args, **kwargs)
+        slot_id = self.kwargs.get('slot_id')
+        if not self.request.user.is_authenticated:
+            return Attendance.objects.none()
+        if self.request.user.is_staff:
+            return Attendance.objects.all()
+        if  not Attendance.objects.filter(slot_id=slot_id, student_id=self.request.user.student).exists():
+            return Attendance.objects.none()
+        return queryset.filter(slot_id=slot_id)
+
     def perform_create(self, serializer):
         serializer.save(student_id = self.request.user.student)
-        courses = Course.objects.all()
         present = Attendance.objects.filter(student_id = self.request.user.student, slot_id__course_id__course_code__in = self.request.user.student.courses).count()
         course = Attendance.objects.filter(slot_id__course_id__course_code__in = self.request.user.student.courses)[0]
-    
-        print(f"course: {course.slot_id.course_id.course_code}")
-        # for p in present:
-        print(f"present slot: {present}")
-        # print(f"present slot: {present.student_id}")
         slot = AttendanceSlot.objects.filter(course_id__course_code = course.slot_id.course_id.course_code).count()
-        print(f"slot: {slot}")
+    
+        # print(f"course: {course.slot_id.course_id.course_code}")
+        # print(f"present slot: {present}")
+        # print(f"slot: {slot}")
         performance = present/slot * 100
         print(f"present: {present}\n slot: {slot}\n performance: {performance}")
-        # Performance.objects.create(student = request.user.student, course=, performance_percent = performance)
         perf = {'performance_percent':performance,}
         Performance.objects.update_or_create(
                                             student = self.request.user.student, 
-                                            course = course.slot_id.course_id.course_code, 
-                                            # course__in = self.request.user.student.courses, 
+                                            course = course.slot_id.course_id.course_code,
                                             defaults=perf)
 
         return super().perform_create(serializer)
+
+class PerformanceView(ListAPIView):
+    queryset = Performance.objects.all()
+    serializer_class = PerformanceSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        # qs = super().get_queryset()
+        qs = Performance.objects.all()
+        request = self.request
+        user = request.user
+        # course = self.kwargs['course']
+        course = self.request.query_params.get("course")
+        # print(f"Course: {course}")
+
+        if user.is_staff:
+            return Performance.objects.all()
+        if not user.is_authenticated:
+            return Performance.objects.none()
+        if user.user_type == 'lecturer':
+            return Performance.objects.filter(course = request.user.lecturer.course_id.course_code)
+        if course is not None:
+            return qs.filter(course = course, student = request.user.student)
+        
+        return qs.filter(course__in = request.user.student.courses, student = request.user.student)
+    
 
 # class Attendance(ListCreateAPIView):
 #     queryset = Attendance.objects.all()

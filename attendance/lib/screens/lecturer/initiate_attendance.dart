@@ -8,6 +8,7 @@ import 'package:attendance/models/lecturers_response.dart';
 import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -35,7 +36,7 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
 
   var dropdownvalue;
   var dropdownvalue1;
-  
+
   DateTime date = DateTime.now();
   Position? _position;
   final _form = GlobalKey<FormState>();
@@ -67,10 +68,27 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
         await showTimePicker(context: context, initialTime: TimeOfDay.now());
 
     if (pickedTime != null) {
-      DateTime parsedTime =
-          DateFormat.jm().parse(pickedTime.format(context).toString());
-      String formattedTime = DateFormat('HH:mm:ss').format(parsedTime);
-      return formattedTime;
+      String parsedTime = DateFormat.jm().format(
+          DateFormat('HH:mm').parse(pickedTime.format(context).toString()));
+      DateTime date = DateTime.now();
+      String second = date.second.toString().padLeft(2, '0');
+      List timeSplit = pickedTime.format(context).split(' ');
+      print("time split: $timeSplit");
+      String formattedTime = timeSplit[0];
+      String time = '$formattedTime:$second';
+      String type = '';
+      if (timeSplit.length > 1) {
+        type = timeSplit[1];
+        time = '$time $type';
+      }
+
+      print("time $time");
+      // DateTime parsedTime = DateFormat.jm()
+      //     .format(DateFormat('HH:mm'))
+      //     .parse(pickedTime.format(context).toString());
+      // String formattedTime = DateFormat('HH:mm').format(parsedTime);
+      return time;
+      // return formattedTime;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: DefaultText(
@@ -134,23 +152,6 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
         startTime: _stme,
         endTime: _entime,
         status: 'ongoing');
-    return slot;
-  }
-
-  _reset() async {
-    startInput.text = "";
-    endInput.text = "";
-    latController.text = "";
-    lonController.text = "";
-    radController.text = "";
-  }
-
-  submit() async {
-    var isValid = _form.currentState!.validate();
-    if (!isValid) return; //do not nothing if is not valid
-    //else
-    _form.currentState!.save(); //save current state of form
-    await _slotCreation();
 
     //display message
     await showDialog(
@@ -171,6 +172,24 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                 )
               ],
             ));
+    return slot;
+  }
+
+  _reset() async {
+    startInput.text = "";
+    endInput.text = "";
+    latController.text = "";
+    lonController.text = "";
+    radController.text = "";
+  }
+
+  submit() async {
+    var isValid = _form.currentState!.validate();
+    if (!isValid) return; //do not nothing if is not valid
+    //else
+    _form.currentState!.save(); //save current state of form
+    await _slotCreation();
+
     _reset();
     Navigator.popAndPushNamed(context, '/lecturerNav');
   }
@@ -324,10 +343,12 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                             onSaved: (newVal) {
                               _course = newVal;
                             },
-                            // validator: (value) {
-                            //   if (value!.isEmpty) return "field is required";
-                            //   return null;
-                            // },
+                            validator: (value) {
+                              if (value == null && value!.isEmpty) {
+                                return "field is required";
+                              }
+                              return null;
+                            },
                           ),
                         ),
                       ],

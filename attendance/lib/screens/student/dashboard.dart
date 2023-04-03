@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:attendance/components/dateContainer.dart';
 import 'package:attendance/components/defaultText.dart';
+import 'package:attendance/models/performance_response.dart';
+import 'package:attendance/models/studentCourse.dart';
 import 'package:attendance/models/studentDetails.dart';
 import 'package:attendance/models/userResponse.dart';
 import 'package:attendance/services/remoteServices.dart';
@@ -24,16 +26,17 @@ class _DashboardState extends State<StudentDashboard> {
   double? indicatorValue;
   Timer? timer;
   String? _username = 'Loading...';
+  Map<String, double> dataMap = {'key': 100.0};
 
   List stdCourse = [];
-  StudentDetails? stdDetail;
+  StudentCourse? _stdCourse;
   UserResponse? user;
   Map<String, double> stdPie = new Map<String, double>();
   // late UserResponse user;
-
   Future<UserResponse?> _getUser() async {
     UserResponse? user = await RemoteService().getUser(context);
     if (user != null) {
+      print(user.username);
       _getStudentDetail(user.username);
       setState(() {
         _username = user.username;
@@ -44,18 +47,35 @@ class _DashboardState extends State<StudentDashboard> {
     return null;
   }
 
-  Future<StudentDetails?> _getStudentDetail(String username) async {
-    stdDetail = await RemoteService().studentDetails(username, context);
-    if (stdDetail != null) {
-      print('Not null');
-      stdCourse = [...stdCourse, ...stdDetail!.courseTitle];
-      // print(stdCourse);
+  Future<Courses?> _getStudentDetail(String username) async {
+    Courses? _stdCourse =
+        await RemoteService.studentCourse(username, context);
+    if (_stdCourse != null) {
+      stdCourse = [...stdCourse, ..._stdCourse.courses];
+      print(stdCourse);
 
-      return stdDetail;
+      // return _stdCourse;
     }
     return null;
   }
 
+  Future<List<Performance>?>? _getAllPerformance(context) async {
+    List<Performance>? performance =
+        await RemoteService.getAllPerformance(context);
+    if (performance != null) {
+      for (var data in performance) {
+        print("${data.course} - ${data.performancePercent}");
+        setState(() {
+          dataMap[data.course] = data.performancePercent;
+          // Map<String, double> dataM = dataMap!;
+        });
+      }
+    } else {
+      Constants.DialogBox(context, "No attendance record", Colors.amber,
+          Icons.info_outline_rounded);
+    }
+    return null;
+  }
 
   updateSeconds() {
     timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
@@ -68,8 +88,7 @@ class _DashboardState extends State<StudentDashboard> {
   @override
   void initState() {
     _getUser();
-    // _getStudentDetail(_username!);
-    
+    _getAllPerformance(context);
     indicatorValue = DateTime.now().second / 60;
     updateSeconds();
     super.initState();
@@ -81,13 +100,13 @@ class _DashboardState extends State<StudentDashboard> {
     super.dispose();
   }
 
-  Map<String, double> dataMap = {
-    "COM411": 23.4,
-    "COM412": 27.2,
-    "COM413": 78.2,
-    "COM414": 75.3,
-    "COM415": 80.3
-  };
+  // Map<String, double> dataMap = {
+  //   "COM411": 23.4,
+  //   "COM412": 27.2,
+  //   "COM413": 78.2,
+  //   "COM414": 75.3,
+  //   "COM415": 80.3
+  // };
 
   List<Color> colorsList = [
     Color(0xFFD95A53),
@@ -156,7 +175,7 @@ class _DashboardState extends State<StudentDashboard> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       DateContainer(day: "${date.day}"),
-                      DateContainer(day: "${DateFormat.MMMM().format(date)}"),
+                      DateContainer(day: DateFormat.MMMM().format(date)),
                       DateContainer(day: "${date.year}"),
                     ],
                   ),

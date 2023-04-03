@@ -62,7 +62,7 @@ class GetStudentCourse(RetrieveUpdateDestroyAPIView):
             return Student.objects.none()
         if user.is_staff:
             return Student.objects.all()
-        return qs.filter(course_title = request.user.student.courses) 
+        return qs.filter(courses = request.user.student.courses) 
     
     
 class StudentFaceView(ListCreateAPIView):

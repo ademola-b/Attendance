@@ -7,6 +7,8 @@ import 'package:attendance/models/attendance_slot_creation_response.dart';
 import 'package:attendance/models/departments_response.dart';
 import 'package:attendance/models/lecturers_response.dart';
 import 'package:attendance/models/loginResponse.dart';
+import 'package:attendance/models/performance_response.dart';
+import 'package:attendance/models/studentCourse.dart';
 import 'package:attendance/models/studentDetails.dart';
 import 'package:attendance/models/studentFace.dart';
 import 'package:attendance/models/userResponse.dart';
@@ -42,7 +44,7 @@ class RemoteService {
           await http.get(userUrl, headers: {"Authorization": "Token $token"});
 
       if (response.statusCode == 200) {
-        print(response.body);
+        // print(response.body);
         return UserResponse.fromJson(json.decode(response.body));
       } else {
         throw Exception('Failed to get user detail');
@@ -128,32 +130,34 @@ class RemoteService {
         return studentDetails;
       }
     } catch (e) {
-      print(e);
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(content: Text("There's a problem with the server")));
+      // print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("There's a problem with the server - $e")));
     }
 
     return null;
   }
 
-  Future<StudentCourse?> studentCourse(String username) async {
+  static Future<Courses?> studentCourse(String username, context) async {
     var box = await Hive.openBox('userToken');
     String token = box.get('token');
     try {
       var response = await http.get(
-          Uri.parse("$base_url/students/courses/$username/"),
+          Uri.parse("$base_url/students/courses/CST20HND0645/"),
           headers: {"Authorization": "Token $token"});
       if (response.statusCode == 200) {
-        final studentCourse = studentCourseFromJson(response.body);
+        final studentCourse = coursesFromJson(response.body);
         return studentCourse;
       }
     } catch (e) {
-      print('Server seems to be down');
+      print('Student Course: Server seems to be down');
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: DefaultText(text: "Server Error: $e", size: 15.0)));
     }
     return null;
   }
 
-  //Attendance Slot
+  //get Attendance Slot
   Future<List<AttendanceSlotResponse>> attendanceSlot() async {
     //get user token
     var box = await Hive.openBox('usertoken');
@@ -181,7 +185,6 @@ class RemoteService {
     String token = box.get('token');
     // var data = jsonEncode({});
     try {
-     
       var response = await http
           .post(Uri.parse("$base_url/attendance/$slot_id/"), headers: {
         "Content-type": "application/json; charset=UTF-8",
@@ -221,6 +224,51 @@ class RemoteService {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: DefaultText(text: "Server Error: $e", size: 15.0)));
     }
+  }
+
+  //get all performance - related to user's course
+  static Future<List<Performance>?> getAllPerformance(context) async {
+    var box = await Hive.openBox('usertoken');
+    String token = box.get('token');
+
+    try {
+      http.Response response = await http.get(performanceUrl, headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        "Authorization": "Token $token"
+      });
+      if (response.statusCode == 200) {
+        return performanceFromJson(response.body);
+      } else {
+        throw Exception("Failed to get marked attendance");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: DefaultText(text: "Server Error: $e", size: 15.0)));
+    }
+
+    return [];
+  }
+
+    static Future<List<Performance>?> getPerformance(context, String course) async {
+    var box = await Hive.openBox('usertoken');
+    String token = box.get('token');
+
+    try {
+      http.Response response = await http.get(Uri.parse("$base_url/attendance/performance/?course=$course"), headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        "Authorization": "Token $token"
+      });
+      if (response.statusCode == 200) {
+        return performanceFromJson(response.body);
+      } else {
+        throw Exception("Failed to get marked attendance");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: DefaultText(text: "Server Error: $e", size: 15.0)));
+    }
+
+    return [];
   }
 
   //get department list
@@ -286,9 +334,10 @@ class RemoteService {
       if (response.statusCode == 201) {
         final slot = attendanceSlotCreationResponseFromJson(response.body);
         return slot;
-      } else {
-        throw Exception("Failed to create slot");
       }
+      // else {
+      //   throw Exception("Failed to create slot");
+      // }
     } catch (e) {
       print("An error occurred while initializing slot: $e");
     }
