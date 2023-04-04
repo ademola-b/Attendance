@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:attendance/models/studentDetails.dart';
 import 'package:attendance/models/userResponse.dart';
 import 'package:attendance/services/remoteServices.dart';
@@ -40,41 +42,38 @@ class _MoreState extends State<More> {
   Future<UserResponse?> _getUser() async {
     UserResponse? user = await RemoteService().getUser(context);
     if (user != null) {
+      print("object");
+      print("Username - ${user.username}");
       setState(() {
         _username = user.username;
       });
-
+      print(_username);
       return user;
     }
     return null;
   }
 
-  Future<StudentDetails?> _getStudentDetail() async {
-    UserResponse? user = await RemoteService().getUser(context);
-    if (user != null) {
-      stdDetail = await RemoteService().studentDetails(user.username, context);
-      if (stdDetail != null) {
-        setState(() {
-          // profile_pic = stdDetail!.profile_pic_memory;
-          // print(profile_pic);
-        });
+  // Future<StudentDetails?> _getStudentDetail() async {
+  //   UserResponse? user = await RemoteService().getUser(context);
+  //   if (user != null) {
+  //     stdDetail = await RemoteService.studentDetails(user.username, context);
+  //     if (stdDetail != null) {
+  //       setState(() {
+  //         // profile_pic = stdDetail!.profile_pic_memory;
+  //         // print(profile_pic);
+  //       });
 
-        // print('Not null');
-        // _first = stdDetail!.userId.firstName;
-        // _last = stdDetail!.userId.lastName;
-
-        // stdCourse = [...stdCourse, ...stdDetail!.courseTitle];
-        // print(stdCourse);
-        return stdDetail;
-      }
-      return null;
-    }
-    return null;
-  }
+  //       return stdDetail;
+  //     }
+  //     return null;
+  //   }
+  //   return null;
+  // }
 
   @override
   void initState() {
-    futureStudentDetail = _getStudentDetail();
+    _getUser();
+    // futureStudentDetail = _getStudentDetail();
     super.initState();
   }
 
@@ -98,9 +97,11 @@ class _MoreState extends State<More> {
                 bottom: -110,
                 child: Center(
                   child: FutureBuilder<StudentDetails?>(
-                    future: futureStudentDetail,
+                    future: RemoteService.studentDetails(_username, context),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
+                        var data = snapshot.data;
+                        ;
                         return Column(
                           children: [
                             Container(
@@ -112,34 +113,33 @@ class _MoreState extends State<More> {
                                     Border.all(color: Colors.white, width: 4.0),
                                 image: DecorationImage(
                                   image: MemoryImage(
-                                      snapshot.data!.profile_pic_memory),
+                                      base64Decode(data!.profilePicMemory)),
                                   fit: BoxFit.cover,
                                 ),
                               ),
                             ),
-                            Text.rich(
+                            Text.rich(TextSpan(children: [
                               TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text:
-                                        "${snapshot.data!.userId.firstName} ${snapshot.data!.userId.lastName} \n",
-                                    style: const TextStyle(
-                                        color: Colors.black, fontSize: 20),
-                                  ),
-                                  TextSpan(
-                                    text: snapshot.data!.userId.username,
-                                    style: const TextStyle(
-                                        color: Colors.grey, fontSize: 17),
-                                  )
-                                ],
+                                text:
+                                    "${data.userId.firstName} ${snapshot.data!.userId.lastName} \n",
+                                style: const TextStyle(
+                                    color: Colors.black, fontSize: 20),
                               ),
-                            ),
+                              TextSpan(
+                                text: snapshot.data!.userId.username,
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 17),
+                              )
+                            ]))
                           ],
                         );
                       }
-                      return const CircularProgressIndicator();
+
+                      return CircularProgressIndicator();
                     },
                   ),
+
+               
                 ),
               ),
             ],

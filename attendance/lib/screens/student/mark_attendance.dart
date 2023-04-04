@@ -16,7 +16,6 @@ import 'package:easy_geofencing/easy_geofencing.dart';
 import 'package:easy_geofencing/enums/geofence_status.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 
 class MarkAttendance extends StatefulWidget {
@@ -65,7 +64,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
     });
   }
 
-  stopStreaming() {
+  stopStreaming() async {
     EasyGeofencing.stopGeofenceService();
     if (geofenceStreamingStatus == null) return;
     geofenceStreamingStatus!.cancel();
@@ -203,9 +202,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                             builder: (context, snapshot) {
                               if (snapshot.hasData) {
                                 var slots = snapshot.data;
-
-                                var format = DateFormat("HH:mm");
-
+                                // var format = DateFormat("HH:mm");
                                 return ListView.builder(
                                   shrinkWrap: true,
                                   scrollDirection: Axis.vertical,
@@ -303,7 +300,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                   },
                                 );
                               } else if (snapshot.hasError) {
-                                print('no data');
+                                print('An error occurred');
                               }
                               return const CircularProgressIndicator();
                             }),

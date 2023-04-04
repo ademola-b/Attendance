@@ -29,7 +29,7 @@ class RemoteService {
       var response = data.body; //will be in json format
       return LoginResponse.fromJson(jsonDecode(response));
     } catch (e) {
-      print('oops!, seems the server is down');
+      print("oops!, seems the server is down: $e");
     }
     return null;
   }
@@ -119,7 +119,8 @@ class RemoteService {
   }
 
   //get student details
-  Future<StudentDetails?> studentDetails(String username, context) async {
+  static Future<StudentDetails?> studentDetails(
+      String? username, context) async {
     try {
       var response = await http.get(Uri.parse("$base_url/students/$username/"));
 
@@ -249,15 +250,18 @@ class RemoteService {
     return [];
   }
 
-    static Future<List<Performance>?> getPerformance(context, String course) async {
+  static Future<List<Performance>?> getPerformance(
+      context, String course) async {
     var box = await Hive.openBox('usertoken');
     String token = box.get('token');
 
     try {
-      http.Response response = await http.get(Uri.parse("$base_url/attendance/performance/?course=$course"), headers: {
-        "Content-type": "application/json; charset=UTF-8",
-        "Authorization": "Token $token"
-      });
+      http.Response response = await http.get(
+          Uri.parse("$base_url/attendance/performance/?course=$course"),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+            "Authorization": "Token $token"
+          });
       if (response.statusCode == 200) {
         return performanceFromJson(response.body);
       } else {

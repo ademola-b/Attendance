@@ -22,6 +22,7 @@ class _PerformanceState extends State<Performance> {
   List course = [];
   var dropdownvalue;
   double performance_percent = 0.0;
+  Color performance_color = Colors.black;
 
   Future _getStudentCourse() async {
     //get username
@@ -41,10 +42,21 @@ class _PerformanceState extends State<Performance> {
     if (performance != null && performance.isNotEmpty) {
       setState(() {
         performance_percent = performance[0].performancePercent;
+        //not working as i want
+        performance_percent > 75
+            ? performance_color = Colors.green
+            : performance_percent > 49 || performance_percent < 74
+                ? performance_color = Colors.amber
+                : performance_percent == 0.0
+                    ? performance_color = Colors.red
+                    : performance_color;
       });
     } else {
       Constants.DialogBox(context, "No attendance record for this course",
           Colors.amber, Icons.info_outline_rounded);
+      setState(() {
+        performance_percent = 0.0;
+      });
     }
     return null;
   }
@@ -130,6 +142,7 @@ class _PerformanceState extends State<Performance> {
                           size: 100.0,
                           text: "$performance_percent %",
                           align: TextAlign.center,
+                          color: performance_color,
                         ),
                       ))
                     ],

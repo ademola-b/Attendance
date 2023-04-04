@@ -4,7 +4,7 @@ import 'package:attendance/components/dateContainer.dart';
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/models/performance_response.dart';
 import 'package:attendance/models/studentCourse.dart';
-import 'package:attendance/models/studentDetails.dart';
+// import 'package:attendance/models/studentDetails.dart';
 import 'package:attendance/models/userResponse.dart';
 import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
@@ -29,7 +29,7 @@ class _DashboardState extends State<StudentDashboard> {
   Map<String, double> dataMap = {'key': 100.0};
 
   List stdCourse = [];
-  StudentCourse? _stdCourse;
+  Courses? _stdCourse;
   UserResponse? user;
   Map<String, double> stdPie = new Map<String, double>();
   // late UserResponse user;
@@ -88,6 +88,7 @@ class _DashboardState extends State<StudentDashboard> {
   @override
   void initState() {
     _getUser();
+   
     _getAllPerformance(context);
     indicatorValue = DateTime.now().second / 60;
     updateSeconds();

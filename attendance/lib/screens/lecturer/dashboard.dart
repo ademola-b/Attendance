@@ -124,6 +124,7 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
                               padding: const EdgeInsets.only(bottom: 15.0),
                               child: DefaultContainer(
                                   course_name:
+                                  
                                       slot![index].courseId.courseTitle,
                                   course_code: slot![index].courseId.courseCode,
                                   end_time: slot![index].endTime),
