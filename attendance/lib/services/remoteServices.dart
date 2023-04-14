@@ -159,7 +159,7 @@ class RemoteService {
   }
 
   //get Attendance Slot
-  Future<List<AttendanceSlotResponse>> attendanceSlot() async {
+  Future<List<AttendanceSlotResponse>?> attendanceSlot() async {
     //get user token
     var box = await Hive.openBox('usertoken');
     String token = box.get('token');

@@ -13,6 +13,32 @@ class ReportForm extends StatefulWidget {
 
 class _ReportFormState extends State<ReportForm> {
   bool percent = true;
+  final _form = GlobalKey<FormState>();
+  DateTime pickedDate = DateTime.now();
+  TextEditingController _fromDate = TextEditingController();
+  TextEditingController _toDate = TextEditingController();
+
+  _submit() {
+    var isValid = _form.currentState!.validate();
+    if (!isValid) return;
+    _form.currentState!.save();
+  }
+
+  pickDate() async {
+    var picked = await showDatePicker(
+        context: context,
+        initialDate: pickedDate,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2030));
+
+    if (picked != null && picked != pickedDate) {
+      setState(() {
+        pickedDate = picked;
+      });
+    }
+
+    _fromDate.text = "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +58,7 @@ class _ReportFormState extends State<ReportForm> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 const DefaultText(
-                  size: 15,
+                  size: 13,
                   text: "Include Performance \n Percent",
                   align: TextAlign.center,
                 ),
@@ -49,31 +75,38 @@ class _ReportFormState extends State<ReportForm> {
             const SizedBox(height: 20.0),
             Expanded(
               child: Form(
+                  key: _form,
                   child: Column(
-                children: [
-                  DefaultTextFormField(
-                      onSaved: (newVal) {},
-                      validator: (String? value) {
-                        if (value!.isEmpty) return "field is required";
-                      },
-                      hintText: 'from date',
-                      fontSize: 15.0),
-                  const SizedBox(height: 20.0),
-                  DefaultTextFormField(
-                      onSaved: (newVal) {},
-                      validator: (String? value) {
-                        if (value!.isEmpty) return "field is required";
-                      },
-                      hintText: 'to date',
-                      fontSize: 15.0),
-                ],
-              )),
+                    children: [
+                      DefaultTextFormField(
+                          controller: _fromDate,
+                          onTap: pickDate,
+                          onSaved: (newVal) {},
+                          validator: (String? value) {
+                            if (value!.isEmpty) return "This field is required";
+                          },
+                          hintText: 'from date',
+                          fontSize: 15.0),
+                      const SizedBox(height: 20.0),
+                      DefaultTextFormField(
+                          controller: _toDate,
+                          onTap: pickDate,
+                          onSaved: (newVal) {},
+                          validator: (String? value) {
+                            if (value!.isEmpty) return "This field is required";
+                          },
+                          hintText: 'to date',
+                          fontSize: 15.0),
+                    ],
+                  )),
             ),
             const Spacer(),
             SizedBox(
                 width: MediaQuery.of(context).size.width,
                 child: DefaultButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _submit();
+                    },
                     text: 'Generate New Report',
                     textSize: 18))
           ],

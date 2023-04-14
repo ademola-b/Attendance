@@ -29,13 +29,25 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   MLService _mlService = locator<MLService>();
   FaceDetectorService _mlKitService = locator<FaceDetectorService>();
   CameraService _cameraService = locator<CameraService>();
-  late Future<List<AttendanceSlotResponse?>> futureAttendanceSlot;
+  late Future<List<AttendanceSlotResponse?>?> futureAttendanceSlot;
 
   late List<StudentFace?>? stdFace;
   List? face = [];
 
   StreamSubscription<GeofenceStatus>? geofenceStreamingStatus;
   String geofenceStatus = '';
+
+  final StreamController<List<AttendanceSlotResponse>?> _streamController =
+      StreamController();
+
+  Future<AttendanceSlotResponse?> _getAttendanceSlot() async {
+    List<AttendanceSlotResponse>? att = await RemoteService().attendanceSlot();
+    if (att != null) {
+      _streamController.sink.add(att);
+    }
+
+    return null;
+  }
 
   _getStudentFace() async {
     stdFace = await RemoteService().studentFace();
@@ -74,18 +86,26 @@ class _MarkAttendanceState extends State<MarkAttendance> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     stopStreaming();
   }
 
+  void updateSlot() {
+    Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      setState(() {
+        _getAttendanceSlot();
+      });
+    });
+  }
+
   @override
   void initState() {
-    futureAttendanceSlot = RemoteService().attendanceSlot();
-
-    _getStudentFace();
     super.initState();
+    futureAttendanceSlot = RemoteService().attendanceSlot();
     _initializeServices();
+    _getStudentFace();
+
+    updateSlot();
   }
 
   _initializeServices() async {
@@ -150,161 +170,35 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                               ),
                             ),
                       const SizedBox(height: 20.0),
-
-                      //card to mark attendance
-                      // GestureDetector(
-                      //   onTap: () {
-                      //     face!.isEmpty
-                      //         ? showDialog(
-                      //             barrierDismissible: false,
-                      //             context: context,
-                      //             builder: (context) => AlertDialog(
-                      //               title: const Text("Register Face"),
-                      //               content: const Text(
-                      //                   "Oops!, You need to register your face before you can take attendance"),
-                      //               actions: [
-                      //                 TextButton(
-                      //                     onPressed: () =>
-                      //                         Navigator.pop(context),
-                      //                     child: const Text('OK'))
-                      //               ],
-                      //             ),
-                      //           )
-                      //         : Navigator.pushNamed(
-                      //             context, '/markAttendanceFace');
-                      //   },
-                      //   child: Container(
-                      //     margin: const EdgeInsets.symmetric(horizontal: 30.0),
-                      //     decoration: BoxDecoration(
-                      //       borderRadius:
-                      //           const BorderRadius.all(Radius.circular(10.0)),
-                      //       color: Constants.backgroundColor,
-                      //     ),
-                      //     child: ListTile(
-                      //       title: const Text('Course Name'),
-                      //       subtitle: Row(
-                      //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      //         children: const [
-                      //           Text('Course Title'),
-                      //           Text('Time Range')
-                      //         ],
-                      //       ),
-                      //       trailing: const Icon(FontAwesomeIcons.angleRight),
-                      //     ),
-                      //   ),
-                      // ),
-
-                      // const SizedBox(height: 20.0),
-
                       Expanded(
-                        child: FutureBuilder<List<AttendanceSlotResponse?>>(
-                            future: futureAttendanceSlot,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                var slots = snapshot.data;
-                                // var format = DateFormat("HH:mm");
-                                return ListView.builder(
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: slots == null ? 0 : slots.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    return GestureDetector(
-                                      onTap: () async {
-                                        face!.isEmpty
-                                            ? Constants.DialogBox(
-                                                context,
-                                                "Oops!, You need to register your face before you can take attendance",
-                                                Colors.amber,
-                                                Icons.camera)
-                                            : await startStreaming(
-                                                slots![index]!.latitude,
-                                                slots[index]!.longitude,
-                                                slots[index]!.radius);
+                        child: StreamBuilder<List<AttendanceSlotResponse>?>(
+                          stream: _streamController.stream,
+                          builder: (context, snapdata) {
+                            switch (snapdata.connectionState) {
+                              case ConnectionState.waiting:
+                                return const CircularProgressIndicator();
+                              default:
+                                if (snapdata.hasData &&
+                                    snapdata.data!.isEmpty) {
+                                  return DefaultText(
+                                    size: 20.0,
+                                    text: "Oops!, No Ongoing Attendance",
+                                    color: Constants.primaryColor,
+                                  );
+                                }
+                                if (snapdata.hasError) {
+                                  return const DefaultText(
+                                    size: 18.0,
+                                    text: "Please, Wait ",
+                                  );
+                                } else {
+                                  return AttendanceSlotBuild(snapdata.data!);
+                                }
+                            }
+                          },
+                        ),
+                      ),
 
-                                        if (geofenceStatus ==
-                                            'GeofenceStatus.exit') {
-                                          await Constants.DialogBox(
-                                              context,
-                                              "Oops!, You are not in the class range",
-                                              Colors.red[700],
-                                              Icons.location_off_outlined);
-                                          // Navigator.popAndPushNamed(
-                                          //     context, '/studentNav');
-                                        } else if (geofenceStatus ==
-                                            'GeofenceStatus.enter') {
-                                          List<Attendance>? _att =
-                                              await RemoteService
-                                                  .getMarkedAttendance(context,
-                                                      slots![index]!.id);
-                                          if (_att != null && _att.isEmpty) {
-                                            Navigator.pushNamed(
-                                                context, '/markAttendanceFace',
-                                                arguments: {
-                                                  'slot_id': slots[index]!.id
-                                                });
-                                          } else {
-                                            Constants.DialogBox(
-                                                context,
-                                                "You've marked attendance already",
-                                                Colors.amber,
-                                                Icons.warning_amber_outlined);
-                                          }
-                                        }
-                                      },
-                                      child: Container(
-                                        width: size.width,
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 30.0),
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(10.0)),
-                                          color: Constants.backgroundColor,
-                                        ),
-                                        child: ListTile(
-                                          title: DefaultText(
-                                            text: slots![index]!
-                                                .courseId
-                                                .courseTitle,
-                                            size: 17.0,
-                                          ),
-                                          subtitle: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              DefaultText(
-                                                text: slots[index]!
-                                                    .courseId
-                                                    .courseCode,
-                                                size: 15.0,
-                                              ),
-                                              const Spacer(),
-                                              Column(
-                                                children: [
-                                                  const DefaultText(
-                                                      text: "Time Ending",
-                                                      size: 15.0),
-                                                  DefaultText(
-                                                      text:
-                                                          slots[index]!.endTime,
-                                                      size: 15.0),
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                          trailing: const Icon(
-                                              FontAwesomeIcons.angleRight),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              } else if (snapshot.hasError) {
-                                print('An error occurred');
-                              }
-                              return const CircularProgressIndicator();
-                            }),
-                      )
                     ],
                   ),
                 ),
@@ -314,6 +208,80 @@ class _MarkAttendanceState extends State<MarkAttendance> {
         ),
       ),
     );
+  }
+
+  Widget AttendanceSlotBuild(List<AttendanceSlotResponse>? attSlot) {
+    return ListView.builder(
+        itemCount: attSlot!.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () async {
+              face!.isEmpty
+                  ? Constants.DialogBox(
+                      context,
+                      "Oops!, You need to register your face before you can take attendance",
+                      Colors.amber,
+                      Icons.camera)
+                  : await startStreaming(attSlot[index].latitude,
+                      attSlot[index].longitude, attSlot[index].radius);
+
+              if (geofenceStatus == 'GeofenceStatus.exit') {
+                await Constants.DialogBox(
+                    context,
+                    "Oops!, You are not in the class range",
+                    Colors.red[700],
+                    Icons.location_off_outlined);
+                // Navigator.popAndPushNamed(
+                //     context, '/studentNav');
+              } else if (geofenceStatus == 'GeofenceStatus.enter') {
+                List<Attendance>? _att =
+                    await RemoteService.getMarkedAttendance(
+                        context, attSlot[index].id);
+                if (_att != null && _att.isEmpty) {
+                  Navigator.pushNamed(context, '/markAttendanceFace',
+                      arguments: {'slot_id': attSlot[index].id});
+                } else {
+                  Constants.DialogBox(
+                      context,
+                      "You've marked attendance already",
+                      Colors.amber,
+                      Icons.warning_amber_outlined);
+                }
+              }
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              margin: const EdgeInsets.symmetric(horizontal: 30.0),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                color: Constants.backgroundColor,
+              ),
+              child: ListTile(
+                title: DefaultText(
+                  text: attSlot[index].courseId.courseTitle,
+                  size: 17.0,
+                ),
+                subtitle: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    DefaultText(
+                      text: attSlot[index].courseId.courseCode,
+                      size: 15.0,
+                    ),
+                    const Spacer(),
+                    Column(
+                      children: [
+                        const DefaultText(text: "Time Ending", size: 15.0),
+                        DefaultText(text: attSlot[index].endTime, size: 15.0),
+                      ],
+                    )
+                  ],
+                ),
+                trailing: const Icon(FontAwesomeIcons.angleRight),
+              ),
+            ),
+          );
+        });
   }
 }
 

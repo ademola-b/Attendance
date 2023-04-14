@@ -113,6 +113,13 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
               FutureBuilder(
                   future: RemoteService().attendanceSlot(),
                   builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return DefaultText(
+                        size: 18.0,
+                        text: "No Ongoing Attendance",
+                        color: Constants.primaryColor,
+                      );
+                    }
                     if (snapshot.hasData) {
                       return ListView.builder(
                           physics: const NeverScrollableScrollPhysics(),
@@ -124,13 +131,12 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
                               padding: const EdgeInsets.only(bottom: 15.0),
                               child: DefaultContainer(
                                   course_name:
-                                  
                                       slot![index].courseId.courseTitle,
                                   course_code: slot![index].courseId.courseCode,
                                   end_time: slot![index].endTime),
                             );
                           });
-                    } 
+                    }
                     return const CircularProgressIndicator();
                   }),
             ],

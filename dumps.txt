@@ -49,3 +49,168 @@ children: [
                 );
               }),
         ],
+
+        ==================================================
+        //card to mark attendance
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     face!.isEmpty
+                      //         ? showDialog(
+                      //             barrierDismissible: false,
+                      //             context: context,
+                      //             builder: (context) => AlertDialog(
+                      //               title: const Text("Register Face"),
+                      //               content: const Text(
+                      //                   "Oops!, You need to register your face before you can take attendance"),
+                      //               actions: [
+                      //                 TextButton(
+                      //                     onPressed: () =>
+                      //                         Navigator.pop(context),
+                      //                     child: const Text('OK'))
+                      //               ],
+                      //             ),
+                      //           )
+                      //         : Navigator.pushNamed(
+                      //             context, '/markAttendanceFace');
+                      //   },
+                      //   child: Container(
+                      //     margin: const EdgeInsets.symmetric(horizontal: 30.0),
+                      //     decoration: BoxDecoration(
+                      //       borderRadius:
+                      //           const BorderRadius.all(Radius.circular(10.0)),
+                      //       color: Constants.backgroundColor,
+                      //     ),
+                      //     child: ListTile(
+                      //       title: const Text('Course Name'),
+                      //       subtitle: Row(
+                      //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      //         children: const [
+                      //           Text('Course Title'),
+                      //           Text('Time Range')
+                      //         ],
+                      //       ),
+                      //       trailing: const Icon(FontAwesomeIcons.angleRight),
+                      //     ),
+                      //   ),
+                      // ),
+
+                      // const SizedBox(height: 20.0),
+
+
+Mark Attendance Slot card
+// Expanded(
+                      //   child: FutureBuilder<List<AttendanceSlotResponse?>?>(
+                      //       future: futureAttendanceSlot,
+                      //       builder: (context, snapshot) {
+                      //         if (snapshot.hasData && snapshot.data!.isEmpty) {
+                      //           return DefaultText(
+                      //             size: 18.0,
+                      //             text: "Oops!, No Ongoing Attendance",
+                      //             color: Constants.primaryColor,
+                      //           );
+                      //         }
+                      //         if (snapshot.hasData) {
+                      //           var slots = snapshot.data;
+                      //           // var format = DateFormat("HH:mm");
+                      //           return ListView.builder(
+                      //             shrinkWrap: true,
+                      //             scrollDirection: Axis.vertical,
+                      //             itemCount: slots == null ? 0 : slots.length,
+                      //             itemBuilder:
+                      //                 (BuildContext context, int index) {
+                      //               return GestureDetector(
+                      //                 onTap: () async {
+                      //                   face!.isEmpty
+                      //                       ? Constants.DialogBox(
+                      //                           context,
+                      //                           "Oops!, You need to register your face before you can take attendance",
+                      //                           Colors.amber,
+                      //                           Icons.camera)
+                      //                       : await startStreaming(
+                      //                           slots![index]!.latitude,
+                      //                           slots[index]!.longitude,
+                      //                           slots[index]!.radius);
+
+                      //                   if (geofenceStatus ==
+                      //                       'GeofenceStatus.exit') {
+                      //                     await Constants.DialogBox(
+                      //                         context,
+                      //                         "Oops!, You are not in the class range",
+                      //                         Colors.red[700],
+                      //                         Icons.location_off_outlined);
+                      //                     // Navigator.popAndPushNamed(
+                      //                     //     context, '/studentNav');
+                      //                   } else if (geofenceStatus ==
+                      //                       'GeofenceStatus.enter') {
+                      //                     List<Attendance>? _att =
+                      //                         await RemoteService
+                      //                             .getMarkedAttendance(context,
+                      //                                 slots![index]!.id);
+                      //                     if (_att != null && _att.isEmpty) {
+                      //                       Navigator.pushNamed(
+                      //                           context, '/markAttendanceFace',
+                      //                           arguments: {
+                      //                             'slot_id': slots[index]!.id
+                      //                           });
+                      //                     } else {
+                      //                       Constants.DialogBox(
+                      //                           context,
+                      //                           "You've marked attendance already",
+                      //                           Colors.amber,
+                      //                           Icons.warning_amber_outlined);
+                      //                     }
+                      //                   }
+                      //                 },
+                      //                 child: Container(
+                      //                   width: size.width,
+                      //                   margin: const EdgeInsets.symmetric(
+                      //                       horizontal: 30.0),
+                      //                   decoration: BoxDecoration(
+                      //                     borderRadius: const BorderRadius.all(
+                      //                         Radius.circular(10.0)),
+                      //                     color: Constants.backgroundColor,
+                      //                   ),
+                      //                   child: ListTile(
+                      //                     title: DefaultText(
+                      //                       text: slots![index]!
+                      //                           .courseId
+                      //                           .courseTitle,
+                      //                       size: 17.0,
+                      //                     ),
+                      //                     subtitle: Row(
+                      //                       mainAxisAlignment:
+                      //                           MainAxisAlignment.spaceAround,
+                      //                       children: [
+                      //                         DefaultText(
+                      //                           text: slots[index]!
+                      //                               .courseId
+                      //                               .courseCode,
+                      //                           size: 15.0,
+                      //                         ),
+                      //                         const Spacer(),
+                      //                         Column(
+                      //                           children: [
+                      //                             const DefaultText(
+                      //                                 text: "Time Ending",
+                      //                                 size: 15.0),
+                      //                             DefaultText(
+                      //                                 text:
+                      //                                     slots[index]!.endTime,
+                      //                                 size: 15.0),
+                      //                           ],
+                      //                         )
+                      //                       ],
+                      //                     ),
+                      //                     trailing: const Icon(
+                      //                         FontAwesomeIcons.angleRight),
+                      //                   ),
+                      //                 ),
+                      //               );
+                      //             },
+                      //           );
+                      //         } else if (snapshot.hasError) {
+                      //           print('An error occurred');
+                      //         }
+                      //         return const CircularProgressIndicator();
+                      //       }),
+                      // )

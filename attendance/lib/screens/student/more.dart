@@ -101,7 +101,7 @@ class _MoreState extends State<More> {
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         var data = snapshot.data;
-                        ;
+                        
                         return Column(
                           children: [
                             Container(
@@ -109,8 +109,8 @@ class _MoreState extends State<More> {
                               width: 150.0,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(100.0),
-                                border:
-                                    Border.all(color: Colors.white, width: 4.0),
+                                border: Border.all(
+                                    color: Colors.white, width: 4.0),
                                 image: DecorationImage(
                                   image: MemoryImage(
                                       base64Decode(data!.profilePicMemory)),
@@ -135,11 +135,9 @@ class _MoreState extends State<More> {
                         );
                       }
 
-                      return CircularProgressIndicator();
+                      return const CircularProgressIndicator();
                     },
                   ),
-
-               
                 ),
               ),
             ],

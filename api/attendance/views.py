@@ -113,8 +113,31 @@ class UpdateAttendanceSlot(UpdateAPIView):
     queryset = AttendanceSlot.objects.all()
     serializer_class = AttendanceSlotUpdateSerializer
 
-
+    def update_slot(self):
+        current_time = datetime.now().strftime("%H:%M:%S")
+        # print("Attendance slot updating")
+        try:
+            queryset = AttendanceSlot.objects.filter(status='ongoing')
+            for instance in queryset:
+                end_time = str(instance.end_time)
+                t1 = datetime.strptime(end_time, "%H:%M:%S")
+                t2 = datetime.strptime(current_time, "%H:%M:%S")
+                time_diff = t1 - t2
+                if time_diff.seconds > 60:
+                    print(f'time: {time_diff.seconds}')
+                    instance.status = 'elapsed'
+                    print('Slot Updated')
+                    instance.radius = '200.0'
+                    instance.save()
+                else:
+                    print('All slots updated')
+                # time_diff = TimeDiff(instance.end_time)
+        except AttendanceSlot.DoesNotExist:
+            pass
+        
+    # not used        
     def put(self, request, *args, **kwargs):
+        print("from put method")
         try:
             queryset = AttendanceSlot.objects.filter(status='ongoing')
         except AttendanceSlot.DoesNotExist:
