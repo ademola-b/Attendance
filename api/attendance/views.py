@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from django.http import Http404
+from django.http import Http404, HttpResponse
 
 from django.shortcuts import render
 from rest_framework import status
@@ -12,7 +12,7 @@ from students.models import Course
 from . models import AttendanceSlot, Attendance, Performance
 from . serializers import (AttendanceSlotCreateSerializer, AttendanceSlotViewSerializer,
                             AttendanceSlotUpdateSerializer, AttendanceSerializer,
-                            AttendanceListSerializer, PerformanceSerializer)
+                            AttendanceListSerializer, PerformanceSerializer, AttendanceReportSerializer)
 # Create your views here.
 
 def TimeDiff(end_time):
@@ -90,8 +90,7 @@ class GetAttendanceSlot(RetrieveDestroyAPIView):
             return AttendanceSlot.objects.filter(lecturer_id = request.user.lecturer)
         student_department = request.user.student.department_id.deptName
         return qs.filter(course_id__course_code__in = request.user.student.courses, department_id__deptName = student_department)
-    
-    
+
     
     # def update(self, request, *args, **kwargs):
     #     data = request.data
@@ -136,22 +135,22 @@ class UpdateAttendanceSlot(UpdateAPIView):
             pass
         
     # not used        
-    def put(self, request, *args, **kwargs):
-        print("from put method")
-        try:
-            queryset = AttendanceSlot.objects.filter(status='ongoing')
-        except AttendanceSlot.DoesNotExist:
-            return Response(status = status.HTTP_400_BAD_REQUEST)
-        for instance in queryset:
-            print(type(instance.end_time))
-            time_diff = TimeDiff(instance.end_time)
-            if time_diff:
-                serializer = self.serializer_class(instance, data = request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data)
-                return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    # def put(self, request, *args, **kwargs):
+    #     print("from put method")
+    #     try:
+    #         queryset = AttendanceSlot.objects.filter(status='ongoing')
+    #     except AttendanceSlot.DoesNotExist:
+    #         return Response(status = status.HTTP_400_BAD_REQUEST)
+    #     for instance in queryset:
+    #         print(type(instance.end_time))
+    #         time_diff = TimeDiff(instance.end_time)
+    #         if time_diff:
+    #             serializer = self.serializer_class(instance, data = request.data)
+    #             if serializer.is_valid():
+    #                 serializer.save()
+    #                 return Response(serializer.data)
+    #             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
 class AttendanceList(ListAPIView):
     queryset = Attendance.objects.all()
@@ -214,6 +213,29 @@ class PerformanceView(ListAPIView):
             return qs.filter(course = course, student = request.user.student)
         
         return qs.filter(course__in = request.user.student.courses, student = request.user.student)
+
+class GenerateAttendanceReport(ListAPIView):
+    queryset = Attendance.objects.all()
+    serializer_class = AttendanceReportSerializer
+    
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
+        request = self.request
+        user = request.user
+        from_date = self.request.query_params.get("from")
+        to_date = self.request.query_params.get("to")
+
+        print(f'from: {from_date}')
+        print(f'to: {to_date}')
+        print(f'course: {request.user.lecturer.course_id.course_code}')
+        if not user.is_authenticated:
+            return Attendance.objects.none()
+        if user.user_type == 'lecturer':
+            return Attendance.objects.filter(slot_id__date__range = (from_date, to_date), slot_id__course_id__course_code = request.user.lecturer.course_id.course_code)
+        if user.user_type == 'student':
+            return Attendance.objects.none()
+        return qs
+        # return qs.filter(slot_id__radius = 100.0)
     
 
 # class Attendance(ListCreateAPIView):

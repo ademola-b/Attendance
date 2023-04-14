@@ -36,8 +36,20 @@ class _ReportFormState extends State<ReportForm> {
         pickedDate = picked;
       });
     }
+  }
 
-    _fromDate.text = "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+  pickFromDate() async {
+    await pickDate();
+
+    _fromDate.text =
+        "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day}";
+  }
+
+  pickToDate() async {
+    await pickDate();
+
+    _toDate.text =
+        "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day}";
   }
 
   @override
@@ -80,7 +92,7 @@ class _ReportFormState extends State<ReportForm> {
                     children: [
                       DefaultTextFormField(
                           controller: _fromDate,
-                          onTap: pickDate,
+                          onTap: pickFromDate,
                           onSaved: (newVal) {},
                           validator: (String? value) {
                             if (value!.isEmpty) return "This field is required";
@@ -90,7 +102,7 @@ class _ReportFormState extends State<ReportForm> {
                       const SizedBox(height: 20.0),
                       DefaultTextFormField(
                           controller: _toDate,
-                          onTap: pickDate,
+                          onTap: pickToDate,
                           onSaved: (newVal) {},
                           validator: (String? value) {
                             if (value!.isEmpty) return "This field is required";

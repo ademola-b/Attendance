@@ -118,3 +118,11 @@ class PerformanceSerializer(serializers.ModelSerializer):
             'course',
             'performance_percent'
         ]
+
+class AttendanceReportSerializer(serializers.ModelSerializer):
+    student_id = StudentMiniSerializer()
+    slot_id = AttendanceSlotMiniSerializer(required=False, read_only=True)
+
+    class Meta:
+        model = Attendance
+        fields = '__all__'
