@@ -8,7 +8,7 @@ from rest_framework.generics import (ListAPIView,  ListCreateAPIView,
 from rest_framework.response import Response
 
 from lecturers.models import Lecturer
-from students.models import Course
+from students.models import Course, Student
 from . models import AttendanceSlot, Attendance, Performance
 from . serializers import (AttendanceSlotCreateSerializer, AttendanceSlotViewSerializer,
                             AttendanceSlotUpdateSerializer, AttendanceSerializer,
@@ -115,6 +115,7 @@ class UpdateAttendanceSlot(UpdateAPIView):
     def update_slot(self):
         current_time = datetime.now().strftime("%H:%M:%S")
         # print("Attendance slot updating")
+
         try:
             queryset = AttendanceSlot.objects.filter(status='ongoing')
             for instance in queryset:
@@ -122,16 +123,36 @@ class UpdateAttendanceSlot(UpdateAPIView):
                 t1 = datetime.strptime(end_time, "%H:%M:%S")
                 t2 = datetime.strptime(current_time, "%H:%M:%S")
                 time_diff = t1 - t2
-                if time_diff.seconds > 60:
-                    print(f'time: {time_diff.seconds}')
+                print(f'course: {instance.course_id.course_code}')
+                students_list = Student.objects.filter(courses__contains = [instance.course_id.course_code])
+                print(f't1:{t1}')
+                print(f't2:{t2}')
+                print(f'student: {students_list}')
+                if t1 == t2 or t2 > t1:
+                    print(f'both times equal')
                     instance.status = 'elapsed'
                     print('Slot Updated')
-                    instance.radius = '200.0'
+                    present1 = Attendance.objects.filter(student_id = students_list[0], slot_id__course_id__course_code = instance.course_id.course_code).count()
+                    print(f'present: {present1}')
+
+                    for std_instance in students_list:
+                        present = Attendance.objects.filter(student_id = std_instance, slot_id__course_id__course_code = instance.course_id.course_code).count()
+                        slot = AttendanceSlot.objects.filter(course_id__course_code = instance.course_id.course_code).count()
+                        performance = present/slot * 100
+                        print(f'present: {present}')
+                        print(f'slot: {slot}')
+
+                        perf = {'performance_percent':performance,}
+                        Performance.objects.update_or_create(
+                                                student = std_instance, 
+                                                course = instance.course_id,
+                                                defaults=perf)
+
                     instance.save()
                 else:
                     print('All slots updated')
-                # time_diff = TimeDiff(instance.end_time)
         except AttendanceSlot.DoesNotExist:
+            print('Attendance slot does npt exist')
             pass
         
     # not used        

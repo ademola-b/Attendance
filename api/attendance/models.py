@@ -1,11 +1,13 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from students.models import Course, Department
+
 # Create your models here.
 
 class AttendanceSlot(models.Model):
-    department_id = models.ForeignKey("students.Department", verbose_name=_("department id"), on_delete=models.CASCADE)
-    course_id = models.ForeignKey("students.Course", verbose_name=_("course id"), related_name= 'course', on_delete=models.CASCADE)
+    department_id = models.ForeignKey(Department, verbose_name=_("department id"), on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Course, verbose_name=_("course id"), related_name= 'course', on_delete=models.CASCADE)
     lecturer_id = models.ForeignKey("lecturers.Lecturer", on_delete=models.CASCADE)
     date = models.DateField(_("attendance date"), auto_now=False, auto_now_add=True)
     start_time = models.TimeField(_("start time"), auto_now=False, auto_now_add=False)
@@ -19,7 +21,7 @@ class AttendanceSlot(models.Model):
         return '{0} - {1}'.format(self.lecturer_id.user_id.username, self.course_id.course_code)
 
 class Attendance(models.Model):
-    slot_id = models.ForeignKey("attendance.AttendanceSlot", verbose_name=_("attendance slot"), on_delete=models.CASCADE)
+    slot_id = models.ForeignKey(AttendanceSlot, verbose_name=_("attendance slot"), on_delete=models.CASCADE)
     student_id = models.ForeignKey("students.Student", on_delete=models.CASCADE)
    
     def __str__(self):

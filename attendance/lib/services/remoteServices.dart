@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/models/attendance.dart';
+import 'package:attendance/models/attendance_report_response.dart';
 import 'package:attendance/models/attendance_slot.dart';
 import 'package:attendance/models/attendance_slot_creation_response.dart';
 import 'package:attendance/models/departments_response.dart';
@@ -159,7 +160,7 @@ class RemoteService {
   }
 
   //get Attendance Slot
-  Future<List<AttendanceSlotResponse>?> attendanceSlot() async {
+  static Future<List<AttendanceSlotResponse>?> attendanceSlot() async {
     //get user token
     var box = await Hive.openBox('usertoken');
     String token = box.get('token');
@@ -345,5 +346,27 @@ class RemoteService {
     } catch (e) {
       print("An error occurred while initializing slot: $e");
     }
+  }
+
+  static Future<List<AttendanceReport>?> attendanceReport(
+      context, String from, String to) async {
+    var box = await Hive.openBox('usertoken');
+    String token = box.get('token');
+    try {
+      http.Response response = await http.get(
+          Uri.parse("$base_url/attendance/report/?from=$from&to=$to"),
+          headers: {'Authorization': 'Token $token'});
+      if (response.statusCode == 200) {
+        return attendanceReportFromJson(response.body);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: DefaultText(
+        size: 15.0,
+        text: "An error occurred: $e",
+      )));
+    }
+
+    return [];
   }
 }

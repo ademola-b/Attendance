@@ -27,6 +27,27 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
   String _username = 'Loading...';
   List<AttendanceSlotResponse>? slot;
 
+  final StreamController<List<AttendanceSlotResponse>?> _streamController =
+      StreamController();
+
+  Future<AttendanceSlotResponse?> _getAttendanceSlot() async {
+    List<AttendanceSlotResponse>? att = await RemoteService.attendanceSlot();
+    if (att != null) {
+      _streamController.sink.add(att);
+    }
+
+    return null;
+  }
+
+  updateSlot() {
+    Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (mounted) {}
+      setState(() {
+        _getAttendanceSlot();
+      });
+    });
+  }
+
   updateSeconds() {
     timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (mounted) {
@@ -37,15 +58,15 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
     });
   }
 
-  Future<AttendanceSlotResponse?> _getSlot() async {
-    slot = await RemoteService().attendanceSlot();
-    if (slot!.isNotEmpty) {
-      setState(() {
-        print(slot);
-      });
-    }
-    return null;
-  }
+  // Future<AttendanceSlotResponse?> _getSlot() async {
+  //   slot = await RemoteService.attendanceSlot();
+  //   if (slot!.isNotEmpty) {
+  //     setState(() {
+  //       print(slot);
+  //     });
+  //   }
+  //   return null;
+  // }
 
   Future<UserResponse?> _getUser() async {
     UserResponse? user = await RemoteService().getUser(context);
@@ -60,10 +81,11 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
 
   @override
   void initState() {
-    _getSlot();
+    // _getAttendanceSlot();
     _getUser();
     indicatorValue = DateTime.now().second / 60;
     updateSeconds();
+    updateSlot();
     super.initState();
   }
 
@@ -108,37 +130,77 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
                 size: 22.0,
                 text: "Ongoing Class",
               ),
-              const Divider(height: 10, thickness: 2.0),
+              Divider(
+                height: 10,
+                thickness: 2.0,
+                color: Constants.primaryColor,
+              ),
               const SizedBox(height: 20.0),
-              FutureBuilder(
-                  future: RemoteService().attendanceSlot(),
+              StreamBuilder<List<AttendanceSlotResponse>?>(
+                  stream: _streamController.stream,
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return DefaultText(
-                        size: 18.0,
-                        text: "No Ongoing Attendance",
-                        color: Constants.primaryColor,
-                      );
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return const CircularProgressIndicator();
+                      default:
+                        if (snapshot.hasData && snapshot.data!.isEmpty) {
+                          return DefaultText(
+                            size: 20.0,
+                            text: 'No ongoing class',
+                            color: Constants.primaryColor,
+                          );
+                        } else if (snapshot.hasError) {
+                          return const DefaultText(
+                              size: 18.0, text: 'Please wait...');
+                        } else {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                scrollDirection: Axis.vertical,
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context, index) {
+                                  return DefaultContainer(
+                                      course_name: snapshot
+                                          .data![index].courseId.courseTitle,
+                                      course_code: snapshot
+                                          .data![index].courseId.courseCode,
+                                      end_time: snapshot.data![index].endTime);
+                                }),
+                          );
+                        }
                     }
-                    if (snapshot.hasData) {
-                      return ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          itemCount: slot!.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 15.0),
-                              child: DefaultContainer(
-                                  course_name:
-                                      slot![index].courseId.courseTitle,
-                                  course_code: slot![index].courseId.courseCode,
-                                  end_time: slot![index].endTime),
-                            );
-                          });
-                    }
-                    return const CircularProgressIndicator();
                   }),
+              // FutureBuilder(
+              //     future: RemoteService.attendanceSlot(),
+              //     builder: (context, snapshot) {
+              //       if (!snapshot.hasData) {
+              //         return DefaultText(
+              //           size: 18.0,
+              //           text: "No Ongoing Attendance",
+              //           color: Constants.primaryColor,
+              //         );
+              //       }
+              //       if (snapshot.hasData) {
+              //         return ListView.builder(
+              //             physics: const NeverScrollableScrollPhysics(),
+              //             shrinkWrap: true,
+              //             scrollDirection: Axis.vertical,
+              //             itemCount: slot!.length,
+              //             itemBuilder: (context, index) {
+              //               return Padding(
+              //                 padding: const EdgeInsets.only(bottom: 15.0),
+              //                 child: DefaultContainer(
+              //                     course_name:
+              //                         slot![index].courseId.courseTitle,
+              //                     course_code: slot![index].courseId.courseCode,
+              //                     end_time: slot![index].endTime),
+              //               );
+              //             });
+              //       }
+              //       return const CircularProgressIndicator();
+              //     }),
             ],
           ),
         ),

@@ -41,7 +41,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
       StreamController();
 
   Future<AttendanceSlotResponse?> _getAttendanceSlot() async {
-    List<AttendanceSlotResponse>? att = await RemoteService().attendanceSlot();
+    List<AttendanceSlotResponse>? att = await RemoteService.attendanceSlot();
     if (att != null) {
       _streamController.sink.add(att);
     }
@@ -101,7 +101,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   @override
   void initState() {
     super.initState();
-    futureAttendanceSlot = RemoteService().attendanceSlot();
+    futureAttendanceSlot = RemoteService.attendanceSlot();
     _initializeServices();
     _getStudentFace();
 

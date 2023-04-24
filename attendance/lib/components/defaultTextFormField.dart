@@ -11,7 +11,7 @@ class DefaultTextFormField extends StatefulWidget {
   final String? Function(String?)? validator;
   final bool? obscureText, enabled;
   final int? maxLines;
-  // final keyboardInputType;
+  final keyboardInputType;
 
   const DefaultTextFormField(
       {Key? key,
@@ -25,7 +25,7 @@ class DefaultTextFormField extends StatefulWidget {
       this.obscureText,
       required this.fontSize,
       this.enabled,
-      this.onTap, required this.onSaved, required this.validator})
+      this.onTap, required this.onSaved, required this.validator,  this.keyboardInputType})
       : super(key: key);
 
   @override
@@ -42,7 +42,7 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
       controller: widget.controller,
       enabled: widget.enabled,
       maxLines: widget.maxLines,
-      // keyboardType: widget.keyboardInputType,
+      keyboardType: widget.keyboardInputType,
       // validator: (value) => widget.validator(value),
       // onSaved: (value) => widget.onSaved(value),
       decoration: InputDecoration(

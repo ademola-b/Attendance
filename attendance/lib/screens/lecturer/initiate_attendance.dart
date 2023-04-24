@@ -68,27 +68,13 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
         await showTimePicker(context: context, initialTime: TimeOfDay.now());
 
     if (pickedTime != null) {
-      String parsedTime = DateFormat.jm().format(
-          DateFormat('HH:mm').parse(pickedTime.format(context).toString()));
-      DateTime date = DateTime.now();
-      String second = date.second.toString().padLeft(2, '0');
-      List timeSplit = pickedTime.format(context).split(' ');
-      print("time split: $timeSplit");
-      String formattedTime = timeSplit[0];
-      String time = '$formattedTime:$second';
-      String type = '';
-      if (timeSplit.length > 1) {
-        type = timeSplit[1];
-        time = '$time $type';
-      }
+      var df = DateFormat("h:mm a");
+      var dt = df.parse(pickedTime.format(context));
+      var finaltime = DateFormat('HH:mm').format(dt);
 
-      print("time $time");
-      // DateTime parsedTime = DateFormat.jm()
-      //     .format(DateFormat('HH:mm'))
-      //     .parse(pickedTime.format(context).toString());
-      // String formattedTime = DateFormat('HH:mm').format(parsedTime);
-      return time;
-      // return formattedTime;
+      return finaltime;
+
+      
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: DefaultText(
@@ -153,25 +139,28 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
         endTime: _entime,
         status: 'ongoing');
 
-    //display message
-    await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              content: const DefaultText(
-                size: 20.0,
-                text: "Slot initiated successfully",
-                color: Colors.green,
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const DefaultText(
-                    size: 15.0,
-                    text: "Ok",
-                  ),
-                )
-              ],
-            ));
+    if (slot != null) {
+      //display message
+      await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                content: const DefaultText(
+                  size: 20.0,
+                  text: "Slot initiated successfully",
+                  color: Colors.green,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const DefaultText(
+                      size: 15.0,
+                      text: "Ok",
+                    ),
+                  )
+                ],
+              ));
+    }
+
     return slot;
   }
 
@@ -378,6 +367,7 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                         if (value!.isEmpty) return "Start Time is required";
                         return null;
                       },
+                      keyboardInputType: TextInputType.none,
                       controller: startInput,
                       onTap: pickStartTime,
                       hintText: "Start Time",
@@ -392,6 +382,7 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                         if (value!.isEmpty) return "End Time is required";
                         return null;
                       },
+                      keyboardInputType: TextInputType.none,
                       controller: endInput,
                       onTap: pickEndTime,
                       hintText: "End Time",
