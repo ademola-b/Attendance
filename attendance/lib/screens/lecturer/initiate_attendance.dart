@@ -115,8 +115,8 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
   }
 
   Future<List<LectResponse>> _getLectDetail() async {
-    List<LectResponse> lect = await RemoteService().getLect();
-    if (lect.isNotEmpty) {
+    List<LectResponse>? lect = await RemoteService.getLect();
+    if (lect!.isNotEmpty) {
       setState(() {
         for (var course in lect) {
           lct[course.courseId.id] = course.courseId.courseCode;

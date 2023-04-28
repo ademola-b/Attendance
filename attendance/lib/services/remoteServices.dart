@@ -10,7 +10,8 @@ import 'package:attendance/models/lecturers_response.dart';
 import 'package:attendance/models/loginResponse.dart';
 import 'package:attendance/models/performance_response.dart';
 import 'package:attendance/models/studentCourse.dart';
-import 'package:attendance/models/studentDetails.dart';
+// import 'package:attendance/models/studentDetails.dart';
+import 'package:attendance/models/studentDetailsResponse.dart';
 import 'package:attendance/models/studentFace.dart';
 import 'package:attendance/models/userResponse.dart';
 import 'package:attendance/services/urls.dart';
@@ -120,23 +121,39 @@ class RemoteService {
   }
 
   //get student details
-  static Future<StudentDetails?> studentDetails(
-      String? username, context) async {
-    try {
-      var response = await http.get(Uri.parse("$base_url/students/$username/"));
+  // static Future<StudentDetails?> studentDetails(
+  //     String? username, context) async {
+  //   try {
+  //     var response = await http.get(Uri.parse("$base_url/students/$username/"));
 
+  //     if (response.statusCode == 200) {
+  //       var jsonResponse = response.body;
+  //       final studentDetails = studentDetailsFromJson(jsonResponse);
+  //       print(studentDetails.userId.username);
+  //       return studentDetails;
+  //     }
+  //   } catch (e) {
+  //     // print(e);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text("There's a problem with the server - $e")));
+  //   }
+
+  //   return null;
+  // }
+
+  static Future<List<StudentDetails>?>? stdDetails(context) async {
+    var box = await Hive.openBox('userToken');
+    String token = box.get('token');
+    try {
+      var response = await http.get(Uri.parse("$base_url/students/profile/"),
+          headers: {"Authorization": "Token $token"});
       if (response.statusCode == 200) {
-        var jsonResponse = response.body;
-        final studentDetails = studentDetailsFromJson(jsonResponse);
-        print(studentDetails.userId.username);
-        return studentDetails;
+        return studentDetailsFromJson(response.body);
       }
     } catch (e) {
-      // print(e);
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("There's a problem with the server - $e")));
+          SnackBar(content: DefaultText(text: "Server Error: $e", size: 15.0)));
     }
-
     return null;
   }
 
@@ -163,7 +180,7 @@ class RemoteService {
   static Future<List<AttendanceSlotResponse>?> attendanceSlot() async {
     //get user token
     var box = await Hive.openBox('usertoken');
-    String token = box.get('token');
+    String? token = box.get('token');
     try {
       var response = await http
           .get(attendanceSlotUrl, headers: {"Authorization": "Token $token"});
@@ -294,7 +311,7 @@ class RemoteService {
   }
 
 //Get Lecturer
-  Future<List<LectResponse>> getLect() async {
+  static Future<List<LectResponse>?> getLect() async {
     var box = await Hive.openBox('usertoken');
     String token = box.get('token');
     var response =

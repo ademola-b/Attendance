@@ -27,7 +27,25 @@ class StudentsList(ListCreateAPIView):
         except:
             user = None
         # return qs
-    
+
+class ProfileView(ListAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentsListSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset()
+        request = self.request
+        user = request.user
+        
+        try:
+            if not user.is_authenticated:
+                Student.objects.none()
+            elif user.is_staff:
+                Student.objects.all()
+
+            return qs.filter(user_id = request.user)
+        except:
+            return None   
 
 class GetStudent(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()

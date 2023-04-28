@@ -1,3 +1,4 @@
+import 'package:attendance/screens/general/more.dart';
 import 'package:attendance/screens/general/profile.dart';
 import 'package:attendance/screens/lecturer/reports.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../utils/constants.dart';
 import 'dashboard.dart';
 import 'initiate_attendance.dart';
-import 'more.dart';
+// import 'more.dart';
 
 class LecturerNav extends StatefulWidget {
   const LecturerNav({Key? key}) : super(key: key);

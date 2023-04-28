@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class DefaultTextFormField extends StatefulWidget {
   final String hintText;
+  final Widget? label;
   final Function()? onTap;
   final double fontSize;
   final IconData? icon;
@@ -28,7 +29,8 @@ class DefaultTextFormField extends StatefulWidget {
       this.onTap,
       this.onSaved,
       this.validator,
-      this.keyboardInputType})
+      this.keyboardInputType,
+      this.label})
       : super(key: key);
 
   @override
@@ -66,6 +68,7 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
         // prefixIcon: Icon(widget.icon),
         // prefixIconColor: Constants.primaryColor,
         hintText: widget.hintText,
+        label: widget.label,
       ),
       style: TextStyle(
         fontFamily: 'Poppins',

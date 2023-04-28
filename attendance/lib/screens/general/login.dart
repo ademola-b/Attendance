@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/models/loginResponse.dart';
+import 'package:attendance/models/studentDetailsResponse.dart';
 import 'package:attendance/models/userResponse.dart';
 import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
@@ -27,7 +30,20 @@ class _LoginState extends State<Login> {
     }
   }
 
-  void _login() async {  
+  // getProfile() async {
+  //   List<StudentDetails>? stdDetail = await RemoteService.stdDetails(context);
+  //   var box = await Hive.openBox('userToken');
+
+  //   if (stdDetail != null && stdDetail.isNotEmpty) {
+  //     var picEncode = base64Encode(stdDetail[0].profilePicMemory);
+  //     await box.put('profile', [
+  //       stdDetail[0].userId.firstName,
+  //       stdDetail[0].userId.lastName,
+  //     ]);
+  //   }
+  // }
+
+  void _login() async {
     var isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
@@ -49,8 +65,10 @@ class _LoginState extends State<Login> {
 
         if (userToken != null) {
           if (userToken.user_type == 'student') {
+            await box.put('usertype', 'student');
             Navigator.popAndPushNamed(context, '/studentNav');
           } else if (userToken.user_type == 'lecturer') {
+            await box.put('usertype', 'lecturer');
             Navigator.popAndPushNamed(context, '/lecturerNav');
           } else if (userToken.user_type == 'admin') {
             print('Page still in construction');

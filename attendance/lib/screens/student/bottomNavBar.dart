@@ -1,6 +1,6 @@
 import 'package:attendance/screens/student/dashboard.dart';
 import 'package:attendance/screens/student/mark_attendance.dart';
-import 'package:attendance/screens/student/more.dart';
+import 'package:attendance/screens/general/more.dart';
 import 'package:attendance/screens/student/performance.dart';
 import 'package:attendance/utils/constants.dart';
 import 'package:flutter/material.dart';

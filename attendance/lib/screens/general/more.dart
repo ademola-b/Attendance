@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:attendance/components/defaultButton.dart';
 import 'package:attendance/components/defaultText.dart';
+import 'package:attendance/models/lecturers_response.dart';
 import 'package:attendance/models/studentDetails.dart';
+import 'package:attendance/models/studentDetailsResponse.dart';
 import 'package:attendance/models/userResponse.dart';
 import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
@@ -18,12 +20,8 @@ class More extends StatefulWidget {
 }
 
 class _MoreState extends State<More> {
-  String? _username = 'Loading...';
-  String? _first = 'FirstName', _last = 'LastName';
+  String? userType;
   List stdCourse = [];
-
-  late Future<StudentDetails?> futureStudentDetail;
-
   StudentDetails? stdDetail;
   UserResponse? user;
 
@@ -43,20 +41,18 @@ class _MoreState extends State<More> {
 
   final List<String> _labelRoutes = ['/profile', '/changePassword', '/about'];
 
-  Future<UserResponse?> _getUser() async {
-    UserResponse? user = await RemoteService().getUser(context);
-    if (user != null) {
-      setState(() {
-        _username = user.username;
-      });
-      return user;
-    }
-    return null;
+   _getUserType() async {
+    var box = await Hive.openBox('userToken');
+    String user_type = box.get('usertype');
+    setState(() {
+      userType = user_type;
+    });
+    print("usertype update: {$userType}");
   }
 
   @override
   void initState() {
-    _getUser();
+    _getUserType();
     super.initState();
   }
 
@@ -73,8 +69,8 @@ class _MoreState extends State<More> {
           child: Column(
             children: [
               Center(
-                child: FutureBuilder<StudentDetails?>(
-                  future: RemoteService.studentDetails(_username, context),
+                child: userType == 'student'? FutureBuilder<List<StudentDetails>?>(
+                  future: RemoteService.stdDetails(context),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       var data = snapshot.data;
@@ -88,8 +84,7 @@ class _MoreState extends State<More> {
                               border:
                                   Border.all(color: Colors.white, width: 4.0),
                               image: DecorationImage(
-                                image: MemoryImage(
-                                    base64Decode(data!.profilePicMemory)),
+                                image: MemoryImage(data![0].profilePicMemory),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -97,11 +92,46 @@ class _MoreState extends State<More> {
                           DefaultText(
                               size: 20.0,
                               text:
-                                  "${data.userId.firstName} ${data.userId.lastName}",
+                                  "${data[0].userId.firstName} ${data[0].userId.lastName}",
                               weight: FontWeight.bold),
                           DefaultText(
                               size: 18.0,
-                              text: data.userId.username,
+                              text: data[0].userId.username,
+                              color: Colors.grey,
+                              weight: FontWeight.bold),
+                        ],
+                      );
+                    }
+                    return const CircularProgressIndicator();
+                  },
+                ) : FutureBuilder<List<LectResponse>?>(
+                  future: RemoteService.getLect(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      var data = snapshot.data;
+                      return Column(
+                        children: [
+                          Container(
+                            height: 150.0,
+                            width: 150.0,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100.0),
+                              border:
+                                  Border.all(color: Colors.white, width: 4.0),
+                              image: DecorationImage(
+                                image: MemoryImage(base64Decode(data![0].picMem)),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          DefaultText(
+                              size: 20.0,
+                              text:
+                                  "${data[0].userId.firstName} ${data[0].userId.lastName}",
+                              weight: FontWeight.bold),
+                          DefaultText(
+                              size: 18.0,
+                              text: data[0].userId.username,
                               color: Colors.grey,
                               weight: FontWeight.bold),
                         ],
@@ -110,14 +140,8 @@ class _MoreState extends State<More> {
                     return const CircularProgressIndicator();
                   },
                 ),
-              ),
-              const SizedBox(height: 20.0),
-              Container(
-                  decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(100.0))),
-                  child: DefaultButton(
-                      onPressed: () {}, text: 'Edit Profile', textSize: 18.0)),
-              const SizedBox(height: 20.0),
+              ) ,
+              const SizedBox(height: 40.0),
               Expanded(
                 child: ListView.builder(
                     itemCount: _labels.length,
