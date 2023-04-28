@@ -248,14 +248,14 @@ class GenerateAttendanceReport(ListAPIView):
 
         print(f'from: {from_date}')
         print(f'to: {to_date}')
-        print(f'course: {request.user.lecturer.course_id.course_code}')
+        # print(f'course: {request.user.lecturer.course_id.course_code}')
         if not user.is_authenticated:
             return Attendance.objects.none()
         if user.user_type == 'lecturer':
             return Attendance.objects.filter(slot_id__date__range = (from_date, to_date), slot_id__course_id__course_code = request.user.lecturer.course_id.course_code)
         if user.user_type == 'student':
             return Attendance.objects.none()
-        return qs
+        return None
         # return qs.filter(slot_id__radius = 100.0)
     
 

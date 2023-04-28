@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:attendance/components/defaultButton.dart';
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/components/defaultTextFormField.dart';
 import 'package:attendance/models/attendance_report_response.dart';
 import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
+import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ReportForm extends StatefulWidget {
   const ReportForm({super.key});
@@ -22,18 +26,43 @@ class _ReportFormState extends State<ReportForm> {
   TextEditingController _toDate = TextEditingController();
   List<AttendanceReport>? attRepo = [];
 
+  Future<void> _generateCSV() async {
+    // List<AttendanceReport>? data = await RemoteService.attendanceReport(
+    //     context, _fromDate.text, _toDate.text);
+
+    List<List<String>> csvData = [
+      <String>[
+        'Registration No',
+        'Full Name',
+      ],
+      ...attRepo!.map((item) => [
+            item.studentId.userId.username,
+            "${item.studentId.userId.firstName} ${item.studentId.userId.lastName}",
+          ])
+    ];
+    String csv = const ListToCsvConverter().convert(csvData);
+
+    final String dir = (await getExternalStorageDirectory())!.path;
+    final String path = "$dir/report-${_fromDate.text}to${_toDate.text}.csv";
+    print(path);
+    final File file = File(path);
+
+    await file.writeAsString(csv);
+
+    return null;
+  }
+
   _submit() async {
     var isValid = _form.currentState!.validate();
     if (!isValid) return;
     _form.currentState!.save();
-
-    
 
     List<AttendanceReport>? attReport = await RemoteService.attendanceReport(
         context, _fromDate.text, _toDate.text);
 
     if (attReport != null && attReport.isNotEmpty) {
       print("Report: $attReport");
+
       setState(() {
         attRepo = [];
         attRepo = [...attRepo!, ...attReport];
@@ -62,7 +91,18 @@ class _ReportFormState extends State<ReportForm> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.8,
                       child: DefaultButton(
-                          onPressed: () {}, text: "Export", textSize: 20.0),
+                          onPressed: () {
+                            _generateCSV();
+                            Constants.DialogBox(
+                                context,
+                                "Report Exported",
+                                Constants.backgroundColor,
+                                Icons.info_outline_rounded);
+
+                            Navigator.pop(context);
+                          },
+                          text: "Export",
+                          textSize: 20.0),
                     ),
                   ],
                 ),

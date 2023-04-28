@@ -48,6 +48,8 @@ dependencies:
   intl: ^0.18.0
   easy_geofencing: ^0.2.0
   flutter_time_picker_spinner: ^2.0.0
+  csv: ^5.0.2
+  path_provider: ^2.0.14
   
 
 dev_dependencies:
