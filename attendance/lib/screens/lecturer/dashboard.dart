@@ -6,6 +6,7 @@ import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/components/defaultContainer.dart';
 import 'package:attendance/models/attendance_slot.dart';
 import 'package:attendance/models/userResponse.dart';
+import 'package:attendance/screens/student/dashboard.dart';
 
 import 'package:attendance/services/remoteServices.dart';
 import 'package:attendance/utils/constants.dart';
@@ -41,10 +42,10 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
 
   updateSlot() {
     Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      if (mounted) {}
-      setState(() {
+      if (mounted) {setState(() {
         _getAttendanceSlot();
-      });
+      });}
+      
     });
   }
 
@@ -57,16 +58,6 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
       }
     });
   }
-
-  // Future<AttendanceSlotResponse?> _getSlot() async {
-  //   slot = await RemoteService.attendanceSlot();
-  //   if (slot!.isNotEmpty) {
-  //     setState(() {
-  //       print(slot);
-  //     });
-  //   }
-  //   return null;
-  // }
 
   Future<UserResponse?> _getUser() async {
     UserResponse? user = await RemoteService().getUser(context);
@@ -101,9 +92,23 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
         centerTitle: true,
         elevation: 0.0,
       ),
-      // backgroundColor: Constants.primaryColor,
-      body: SingleChildScrollView(
-        child: Padding(
+      body: Stack(children: [
+        Positioned(
+            right: -50.0,
+            top: 20,
+            child: Opacity(
+                opacity: 0.1,
+                child: Image.asset("assets/images/back_time.png",
+                    width: 200, height: 200))),
+        Positioned(
+            left: -30.0,
+            bottom: 20,
+            child: Opacity(
+                opacity: 0.1,
+                child: Image.asset("assets/images/geo.png",
+                    width: 100, height: 100))),
+        
+        Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -172,39 +177,10 @@ class _LecturerDashboardState extends State<LecturerDashboard> {
                         }
                     }
                   }),
-              // FutureBuilder(
-              //     future: RemoteService.attendanceSlot(),
-              //     builder: (context, snapshot) {
-              //       if (!snapshot.hasData) {
-              //         return DefaultText(
-              //           size: 18.0,
-              //           text: "No Ongoing Attendance",
-              //           color: Constants.primaryColor,
-              //         );
-              //       }
-              //       if (snapshot.hasData) {
-              //         return ListView.builder(
-              //             physics: const NeverScrollableScrollPhysics(),
-              //             shrinkWrap: true,
-              //             scrollDirection: Axis.vertical,
-              //             itemCount: slot!.length,
-              //             itemBuilder: (context, index) {
-              //               return Padding(
-              //                 padding: const EdgeInsets.only(bottom: 15.0),
-              //                 child: DefaultContainer(
-              //                     course_name:
-              //                         slot![index].courseId.courseTitle,
-              //                     course_code: slot![index].courseId.courseCode,
-              //                     end_time: slot![index].endTime),
-              //               );
-              //             });
-              //       }
-              //       return const CircularProgressIndicator();
-              //     }),
             ],
           ),
         ),
-      ),
+      ]),
     );
   }
 }

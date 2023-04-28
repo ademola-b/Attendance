@@ -48,8 +48,7 @@ class _DashboardState extends State<StudentDashboard> {
   }
 
   Future<Courses?> _getStudentDetail(String username) async {
-    Courses? _stdCourse =
-        await RemoteService.studentCourse(username, context);
+    Courses? _stdCourse = await RemoteService.studentCourse(username, context);
     if (_stdCourse != null) {
       stdCourse = [...stdCourse, ..._stdCourse.courses];
       print(stdCourse);
@@ -88,7 +87,7 @@ class _DashboardState extends State<StudentDashboard> {
   @override
   void initState() {
     _getUser();
-   
+
     _getAllPerformance(context);
     indicatorValue = DateTime.now().second / 60;
     updateSeconds();
@@ -122,7 +121,7 @@ class _DashboardState extends State<StudentDashboard> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('DASHBOARD'),
+        title: const DefaultText(text: 'DASHBOARD', size: 22.0),
         centerTitle: true,
       ),
       body: Stack(
@@ -140,7 +139,7 @@ class _DashboardState extends State<StudentDashboard> {
               child: Opacity(
                   opacity: 0.1,
                   child: Image.asset("assets/images/geo.png",
-                      width: 100, height: 100))),
+                      width: 200, height: 200))),
           Positioned(
             bottom: 0,
             right: 0,

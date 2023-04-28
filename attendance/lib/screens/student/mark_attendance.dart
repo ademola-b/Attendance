@@ -92,9 +92,11 @@ class _MarkAttendanceState extends State<MarkAttendance> {
 
   void updateSlot() {
     Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      setState(() {
-        _getAttendanceSlot();
-      });
+      if (mounted) {
+        setState(() {
+          _getAttendanceSlot();
+        });
+      }
     });
   }
 
@@ -198,7 +200,6 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                           },
                         ),
                       ),
-
                     ],
                   ),
                 ),

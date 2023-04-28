@@ -25,7 +25,10 @@ class DefaultTextFormField extends StatefulWidget {
       this.obscureText,
       required this.fontSize,
       this.enabled,
-      this.onTap, required this.onSaved, required this.validator,  this.keyboardInputType})
+      this.onTap,
+      this.onSaved,
+      this.validator,
+      this.keyboardInputType})
       : super(key: key);
 
   @override

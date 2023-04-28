@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:attendance/components/defaultButton.dart';
+import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/models/studentDetails.dart';
 import 'package:attendance/models/userResponse.dart';
 import 'package:attendance/services/remoteServices.dart';
@@ -39,176 +41,138 @@ class _MoreState extends State<More> {
     FontAwesomeIcons.addressBook,
   ];
 
+  final List<String> _labelRoutes = ['/profile', '/changePassword', '/about'];
+
   Future<UserResponse?> _getUser() async {
     UserResponse? user = await RemoteService().getUser(context);
     if (user != null) {
-      print("object");
-      print("Username - ${user.username}");
       setState(() {
         _username = user.username;
       });
-      print(_username);
       return user;
     }
     return null;
   }
 
-  // Future<StudentDetails?> _getStudentDetail() async {
-  //   UserResponse? user = await RemoteService().getUser(context);
-  //   if (user != null) {
-  //     stdDetail = await RemoteService.studentDetails(user.username, context);
-  //     if (stdDetail != null) {
-  //       setState(() {
-  //         // profile_pic = stdDetail!.profile_pic_memory;
-  //         // print(profile_pic);
-  //       });
-
-  //       return stdDetail;
-  //     }
-  //     return null;
-  //   }
-  //   return null;
-  // }
-
   @override
   void initState() {
     _getUser();
-    // futureStudentDetail = _getStudentDetail();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const DefaultText(text: 'PROFILE', size: 22.0),
+          centerTitle: true,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 50.0, right: 20.0, left: 20.0),
+          child: Column(
             children: [
-              const SizedBox(
-                height: 220.0,
-                child: Image(
-                  image: AssetImage('assets/images/cool_bg.jpg'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                bottom: -110,
-                child: Center(
-                  child: FutureBuilder<StudentDetails?>(
-                    future: RemoteService.studentDetails(_username, context),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        var data = snapshot.data;
-                        
-                        return Column(
-                          children: [
-                            Container(
-                              height: 150.0,
-                              width: 150.0,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(100.0),
-                                border: Border.all(
-                                    color: Colors.white, width: 4.0),
-                                image: DecorationImage(
-                                  image: MemoryImage(
-                                      base64Decode(data!.profilePicMemory)),
-                                  fit: BoxFit.cover,
-                                ),
+              Center(
+                child: FutureBuilder<StudentDetails?>(
+                  future: RemoteService.studentDetails(_username, context),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      var data = snapshot.data;
+                      return Column(
+                        children: [
+                          Container(
+                            height: 150.0,
+                            width: 150.0,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100.0),
+                              border:
+                                  Border.all(color: Colors.white, width: 4.0),
+                              image: DecorationImage(
+                                image: MemoryImage(
+                                    base64Decode(data!.profilePicMemory)),
+                                fit: BoxFit.cover,
                               ),
                             ),
-                            Text.rich(TextSpan(children: [
-                              TextSpan(
-                                text:
-                                    "${data.userId.firstName} ${snapshot.data!.userId.lastName} \n",
-                                style: const TextStyle(
-                                    color: Colors.black, fontSize: 20),
-                              ),
-                              TextSpan(
-                                text: snapshot.data!.userId.username,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 17),
-                              )
-                            ]))
-                          ],
-                        );
-                      }
-
-                      return const CircularProgressIndicator();
-                    },
-                  ),
+                          ),
+                          DefaultText(
+                              size: 20.0,
+                              text:
+                                  "${data.userId.firstName} ${data.userId.lastName}",
+                              weight: FontWeight.bold),
+                          DefaultText(
+                              size: 18.0,
+                              text: data.userId.username,
+                              color: Colors.grey,
+                              weight: FontWeight.bold),
+                        ],
+                      );
+                    }
+                    return const CircularProgressIndicator();
+                  },
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              Container(
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(100.0))),
+                  child: DefaultButton(
+                      onPressed: () {}, text: 'Edit Profile', textSize: 18.0)),
+              const SizedBox(height: 20.0),
+              Expanded(
+                child: ListView.builder(
+                    itemCount: _labels.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        margin: const EdgeInsets.all(5.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Constants.primaryColor, width: 0.2),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10.0)),
+                        ),
+                        child: ListTile(
+                          textColor: Constants.primaryColor,
+                          leading: Icon(
+                            _labelIcons[index],
+                            color: Constants.primaryColor,
+                          ),
+                          title: DefaultText(
+                            text: _labels[index],
+                            size: 16.0,
+                            color: Colors.black,
+                          ),
+                          trailing: const Icon(
+                            FontAwesomeIcons.angleRight,
+                          ),
+                          onTap: () {
+                            Navigator.pushNamed(context, _labelRoutes[index]);
+                          },
+                        ),
+                      );
+                    }),
+              ),
+              Container(
+                margin: const EdgeInsets.all(5.0),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1.0, color: Colors.red),
+                  borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                ),
+                child: ListTile(
+                  textColor: Colors.red,
+                  leading: const Icon(FontAwesomeIcons.doorOpen),
+                  title: const DefaultText(size: 15.0, text: "Logout"),
+                  trailing: const Icon(FontAwesomeIcons.angleRight),
+                  onTap: () async {
+                    var box = await Hive.box('userToken');
+                    box.deleteAll(['token', 'username']);
+                    Navigator.popAndPushNamed(context, '/login');
+                  },
                 ),
               ),
             ],
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ListView.builder(
-                  padding: const EdgeInsets.only(top: 120.0),
-                  itemCount: _labels.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.all(5.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 0.1),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                      child: ListTile(
-                        leading: Icon(_labelIcons[index]),
-                        title: Text(_labels[index]),
-                        trailing: const Icon(FontAwesomeIcons.angleRight),
-                        onTap: () {},
-                      ),
-                    );
-                  }),
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.all(5.0),
-            decoration: BoxDecoration(
-              border: Border.all(width: 1.0, color: Colors.red),
-              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            ),
-            child: ListTile(
-              textColor: Colors.red,
-              leading: Icon(FontAwesomeIcons.doorOpen),
-              title: Text("Logout"),
-              trailing: const Icon(FontAwesomeIcons.angleRight),
-              onTap: () async {
-                var box = await Hive.box('userToken');
-                box.deleteAll(['token', 'username']);
-                Navigator.popAndPushNamed(context, '/login');
-              },
-            ),
-          ),
-        ],
+        ),
       ),
     );
-  }
-}
-
-class MorePaint extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..color = Constants.primaryColor
-      ..style = PaintingStyle.fill;
-
-    // Path path = Path()..moveTo(0, 0);
-
-    // path.arcToPoint(Offset(size.width, 100),
-    //     radius: Radius.circular(1.0), clockwise: false, largeArc: true);
-
-    // canvas.drawPath(path, paint);
-
-    canvas.drawArc(Offset(100, 100) & Size(100, 100), 0, 2, false, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

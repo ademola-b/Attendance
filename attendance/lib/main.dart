@@ -1,8 +1,11 @@
 import 'package:attendance/components/face_auth/camera_page.dart';
 import 'package:attendance/components/face_auth/mark_attendance.dart';
 import 'package:attendance/locator.dart';
+import 'package:attendance/screens/general/about.dart';
+import 'package:attendance/screens/general/change_password.dart';
 import 'package:attendance/screens/general/login.dart';
 import 'package:attendance/screens/general/onboard.dart';
+import 'package:attendance/screens/general/profile.dart';
 import 'package:attendance/screens/lecturer/dashboard.dart';
 import 'package:attendance/screens/lecturer/bottomNavBar.dart';
 import 'package:attendance/screens/lecturer/initiate_attendance.dart';
@@ -90,9 +93,11 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
       });
 
     case "/markAttendanceFace":
-      return MaterialPageRoute(settings: settings, builder: (context) {
-        return MarkAttendanceFace(settings.arguments); //to mark attendance
-      });
+      return MaterialPageRoute(
+          settings: settings,
+          builder: (context) {
+            return MarkAttendanceFace(settings.arguments); //to mark attendance
+          });
 
     case "/initiate_attendance":
       return MaterialPageRoute(builder: (context) {
@@ -112,6 +117,21 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
     case "/more":
       return MaterialPageRoute(builder: (context) {
         return const More();
+      });
+
+    case "/changePassword":
+      return MaterialPageRoute(builder: (context) {
+        return const ChangePassword();
+      });
+
+    case "/profile":
+      return MaterialPageRoute(builder: (context) {
+        return const Profile();
+      });
+
+    case "/about":
+      return MaterialPageRoute(builder: (context) {
+        return const AboutApp();
       });
 
     default:

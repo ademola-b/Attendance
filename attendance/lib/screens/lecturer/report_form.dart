@@ -27,6 +27,8 @@ class _ReportFormState extends State<ReportForm> {
     if (!isValid) return;
     _form.currentState!.save();
 
+    
+
     List<AttendanceReport>? attReport = await RemoteService.attendanceReport(
         context, _fromDate.text, _toDate.text);
 
@@ -145,8 +147,9 @@ class _ReportFormState extends State<ReportForm> {
                             keyboardInputType: TextInputType.none,
                             onSaved: (newVal) {},
                             validator: (String? value) {
-                              if (value!.isEmpty)
+                              if (value!.isEmpty) {
                                 return "This field is required";
+                              }
                             },
                             hintText: 'from date',
                             fontSize: 15.0),
@@ -157,8 +160,9 @@ class _ReportFormState extends State<ReportForm> {
                             keyboardInputType: TextInputType.none,
                             onSaved: (newVal) {},
                             validator: (String? value) {
-                              if (value!.isEmpty)
+                              if (value!.isEmpty) {
                                 return "This field is required";
+                              }
                             },
                             hintText: 'to date',
                             fontSize: 15.0),
@@ -166,9 +170,6 @@ class _ReportFormState extends State<ReportForm> {
                     ),
                   )),
             ),
-            // Expanded(
-            //   child: AttReport(attReport),
-            // ),
             const Spacer(),
             SizedBox(
                 width: MediaQuery.of(context).size.width,
