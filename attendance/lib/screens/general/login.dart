@@ -22,6 +22,7 @@ class _LoginState extends State<Login> {
   late String _username;
   late String _password;
   bool _isLoading = false;
+  bool _obscureText = true;
 
   Future _getUser(token) async {
     UserResponse? user = await RemoteService().getUser(context);
@@ -30,18 +31,11 @@ class _LoginState extends State<Login> {
     }
   }
 
-  // getProfile() async {
-  //   List<StudentDetails>? stdDetail = await RemoteService.stdDetails(context);
-  //   var box = await Hive.openBox('userToken');
-
-  //   if (stdDetail != null && stdDetail.isNotEmpty) {
-  //     var picEncode = base64Encode(stdDetail[0].profilePicMemory);
-  //     await box.put('profile', [
-  //       stdDetail[0].userId.firstName,
-  //       stdDetail[0].userId.lastName,
-  //     ]);
-  //   }
-  // }
+  _toggle() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
 
   void _login() async {
     var isValid = _form.currentState!.validate();
@@ -171,9 +165,16 @@ class _LoginState extends State<Login> {
                                 onSaved: (newValue) {
                                   _password = newValue!;
                                 },
-                                decoration: const InputDecoration(
-                                  prefixIcon: Icon(Icons.lock),
+                                obscureText: _obscureText,
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(Icons.lock),
                                   labelText: "Password",
+                                  suffixIcon: GestureDetector(
+                                    onTap: () => _toggle(),
+                                    child: _obscureText
+                                        ? const Icon(Icons.visibility)
+                                        : const Icon(Icons.visibility_off),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 24.0),

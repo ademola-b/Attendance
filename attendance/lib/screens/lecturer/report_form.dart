@@ -91,14 +91,14 @@ class _ReportFormState extends State<ReportForm> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.8,
                       child: DefaultButton(
-                          onPressed: () {
+                          onPressed: () async {
                             _generateCSV();
-                            Constants.DialogBox(
+                            Navigator.pop(context);
+                            await Constants.DialogBox(
                                 context,
                                 "Report Exported",
-                                Constants.backgroundColor,
+                                Constants.primaryColor,
                                 Icons.info_outline_rounded);
-
                             Navigator.pop(context);
                           },
                           text: "Export",

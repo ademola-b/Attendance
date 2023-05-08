@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:attendance/components/defaultText.dart';
 import 'package:attendance/components/face_auth/widgets/face_painter.dart';
 import 'package:attendance/components/face_auth/widgets/mark_attendance_plugs.dart';
