@@ -44,12 +44,10 @@ class _ReportFormState extends State<ReportForm> {
 
     final String dir = (await getExternalStorageDirectory())!.path;
     final String path = "$dir/report-${_fromDate.text}to${_toDate.text}.csv";
-    print(path);
+    // print(path);
     final File file = File(path);
 
     await file.writeAsString(csv);
-
-    return null;
   }
 
   _submit() async {
@@ -61,13 +59,12 @@ class _ReportFormState extends State<ReportForm> {
         context, _fromDate.text, _toDate.text);
 
     if (attReport != null && attReport.isNotEmpty) {
-      print("Report: $attReport");
-
+      // print("Report: $attReport");
       setState(() {
         attRepo = [];
         attRepo = [...attRepo!, ...attReport];
       });
-      print("Att Report: $attRepo");
+      // print("Att Report: $attRepo");
       showModalBottomSheet(
           context: context,
           builder: (builder) {
@@ -226,35 +223,35 @@ class _ReportFormState extends State<ReportForm> {
   }
 }
 
-Widget AttReport(List<AttendanceReport>? attRepo) {
-  return ListView.builder(
-      itemCount: attRepo == null ? 0 : attRepo.length,
-      itemBuilder: (context, index) {
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          margin: const EdgeInsets.symmetric(horizontal: 30.0),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            color: Constants.backgroundColor,
-          ),
-          child: ListTile(
-            title: DefaultText(
-              text: attRepo![index].studentId.userId.username,
-              size: 17.0,
-            ),
-            subtitle: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                DefaultText(
-                  text: attRepo[index].studentId.userId.firstName,
-                  size: 15.0,
-                ),
-                const SizedBox(width: 20.0),
-                DefaultText(
-                    text: attRepo[index].studentId.userId.lastName, size: 15.0)
-              ],
-            ),
-          ),
-        );
-      });
-}
+// Widget AttReport(List<AttendanceReport>? attRepo) {
+//   return ListView.builder(
+//       itemCount: attRepo == null ? 0 : attRepo.length,
+//       itemBuilder: (context, index) {
+//         return Container(
+//           width: MediaQuery.of(context).size.width,
+//           margin: const EdgeInsets.symmetric(horizontal: 30.0),
+//           decoration: BoxDecoration(
+//             borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+//             color: Constants.backgroundColor,
+//           ),
+//           child: ListTile(
+//             title: DefaultText(
+//               text: attRepo![index].studentId.userId.username,
+//               size: 17.0,
+//             ),
+//             subtitle: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceAround,
+//               children: [
+//                 DefaultText(
+//                   text: attRepo[index].studentId.userId.firstName,
+//                   size: 15.0,
+//                 ),
+//                 const SizedBox(width: 20.0),
+//                 DefaultText(
+//                     text: attRepo[index].studentId.userId.lastName, size: 15.0)
+//               ],
+//             ),
+//           ),
+//         );
+//       });
+// }

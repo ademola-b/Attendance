@@ -114,6 +114,7 @@ class UpdateAttendanceSlot(UpdateAPIView):
 
     def update_slot(self):
         current_time = datetime.now().strftime("%H:%M:%S")
+        current_date = datetime.now().today()
         # print("Attendance slot updating")
 
         try:
@@ -122,13 +123,15 @@ class UpdateAttendanceSlot(UpdateAPIView):
                 end_time = str(instance.end_time)
                 t1 = datetime.strptime(end_time, "%H:%M:%S")
                 t2 = datetime.strptime(current_time, "%H:%M:%S")
-                time_diff = t1 - t2
-                print(f'course: {instance.course_id.course_code}')
+                # time_diff = t1 - t2
+                # print(f'course: {instance.course_id.course_code}')
                 students_list = Student.objects.filter(courses__contains = [instance.course_id.course_code])
                 print(f't1:{t1}')
                 print(f't2:{t2}')
                 print(f'student: {students_list}')
-                if t1 == t2 or t2 > t1:
+                print(f'current_date: {current_date}')
+                print(f'att_date: {instance.date.today}')
+                if t1 == t2 or t2 > t1 or current_date.__gt__(instance.date.today):
                     print(f'both times equal')
                     instance.status = 'elapsed'
                     print('Slot Updated')
@@ -245,10 +248,7 @@ class GenerateAttendanceReport(ListAPIView):
         user = request.user
         from_date = self.request.query_params.get("from")
         to_date = self.request.query_params.get("to")
-
-        print(f'from: {from_date}')
-        print(f'to: {to_date}')
-        # print(f'course: {request.user.lecturer.course_id.course_code}')
+        
         if not user.is_authenticated:
             return Attendance.objects.none()
         if user.user_type == 'lecturer':

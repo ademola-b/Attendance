@@ -41,6 +41,9 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
   Position? _position;
   final _form = GlobalKey<FormState>();
 
+  String Ndate = DateFormat("yyyy-MM-dd").format(DateTime.now());
+
+
   Future _getCurrentLocation() async {
     Position position = await _determinePosition();
     setState(() {
@@ -73,8 +76,6 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
       var finaltime = DateFormat('HH:mm').format(dt);
 
       return finaltime;
-
-      
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: DefaultText(
@@ -354,7 +355,7 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                       enabled: false,
                       controller: TextEditingController(
                           text:
-                              "${date.year}-${date.month.toString().padLeft(2, "0")}-${date.day}"),
+                              "${date.year}-${date.month.toString().padLeft(2, "0")}-${date.day.toString().padLeft(2, "0")}"),
                       fontSize: 15.0,
                       hintText: 'Date',
                     ),

@@ -29,7 +29,7 @@ class _ProfileState extends State<Profile> {
     setState(() {
       userType = user_type;
     });
-    print("usertype update: {$userType}");
+    // print("usertype update: {$userType}");
   }
 
   @override

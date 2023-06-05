@@ -58,6 +58,7 @@ class _LoginState extends State<Login> {
         UserResponse? userToken = await _getUser(loginResponse.key);
 
         if (userToken != null) {
+          // print("usertoken: ${userToken.user_type}");
           if (userToken.user_type == 'student') {
             await box.put('usertype', 'student');
             Navigator.popAndPushNamed(context, '/studentNav');
