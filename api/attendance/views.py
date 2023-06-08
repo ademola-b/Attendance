@@ -1,4 +1,5 @@
 from datetime import datetime, time
+from django.utils.timezone import localtime, now
 from django.http import Http404, HttpResponse
 
 from django.shortcuts import render
@@ -26,7 +27,6 @@ def TimeDiff(end_time):
         return True
     else:
         return False
-
 
 
 #view to create attendance slot
@@ -121,17 +121,20 @@ class UpdateAttendanceSlot(UpdateAPIView):
             queryset = AttendanceSlot.objects.filter(status='ongoing')
             for instance in queryset:
                 end_time = str(instance.end_time)
-                t1 = datetime.strptime(end_time, "%H:%M:%S")
-                t2 = datetime.strptime(current_time, "%H:%M:%S")
-                # time_diff = t1 - t2
+                end = datetime.strptime(end_time, "%H:%M:%S")
+                current = datetime.strptime(current_time, "%H:%M:%S")
+                # time_diff = end - current
                 # print(f'course: {instance.course_id.course_code}')
                 students_list = Student.objects.filter(courses__contains = [instance.course_id.course_code])
-                print(f't1:{t1}')
-                print(f't2:{t2}')
+                print(f'end:{end}')
+                print(f'current:{current.second}')
                 print(f'student: {students_list}')
                 print(f'current_date: {current_date}')
-                print(f'att_date: {instance.date.today}')
-                if t1 == t2 or t2 > t1 or current_date.__gt__(instance.date.today):
+                print(f'att_date: {instance.date.today()}')
+                print(f'local_time: {localtime().time()}')
+                # if end == current or current > end or current_date.__gt__(instance.date.today):
+               
+                if localtime().time() >= instance.end_time:
                     print(f'both times equal')
                     instance.status = 'elapsed'
                     print('Slot Updated')
@@ -155,7 +158,7 @@ class UpdateAttendanceSlot(UpdateAPIView):
                 else:
                     print('All slots updated')
         except AttendanceSlot.DoesNotExist:
-            print('Attendance slot does npt exist')
+            print('Attendance slot does not exist')
             pass
         
     # not used        

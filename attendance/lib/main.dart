@@ -10,7 +10,6 @@ import 'package:attendance/screens/general/profile.dart';
 import 'package:attendance/screens/lecturer/dashboard.dart';
 import 'package:attendance/screens/lecturer/bottomNavBar.dart';
 import 'package:attendance/screens/lecturer/initiate_attendance.dart';
-// import 'package:attendance/screens/lecturer/more.dart';
 import 'package:attendance/screens/lecturer/performance.dart';
 import 'package:attendance/screens/lecturer/reports.dart';
 import 'package:attendance/screens/student/dashboard.dart';

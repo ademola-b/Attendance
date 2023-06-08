@@ -42,7 +42,29 @@ class _ReportFormState extends State<ReportForm> {
     ];
     String csv = const ListToCsvConverter().convert(csvData);
 
-    final String dir = (await getExternalStorageDirectory())!.path;
+
+  // get download path
+  Future<String> getDownloadPath(context) async {
+    Directory? dir;
+    try {
+      Platform.isIOS
+          ? dir = await getApplicationDocumentsDirectory()
+          : dir = Directory('/storage/emulated/0/Download');
+      if (!await dir.exists()) dir = await getExternalStorageDirectory();
+    } catch (err) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: DefaultText(
+              size: 15.0,
+              text:
+                  "Can't get download folder, check if storage permission is enabled")));
+    }
+
+    // print("Saved Dir: ${dir!.path}");
+    return dir!.path;
+  }
+
+    // final String dir = (await getExternalStorageDirectory())!.path;
+    final String dir = (await getDownloadPath(context));
     final String path = "$dir/report-${_fromDate.text}to${_toDate.text}.csv";
     // print(path);
     final File file = File(path);

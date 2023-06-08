@@ -39,10 +39,20 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
 
   DateTime date = DateTime.now();
   Position? _position;
+  Position? position;
+  bool isReady = false;
   final _form = GlobalKey<FormState>();
+  TimeOfDay stTime = const TimeOfDay(hour: 00, minute: 00);
+  TimeOfDay enTime = const TimeOfDay(hour: 00, minute: 00);
 
   String Ndate = DateFormat("yyyy-MM-dd").format(DateTime.now());
 
+  getCurrentPosition() async {
+    position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    print("LOCATION => ${position!.toJson()}");
+    isReady = (position != null) ? true : false;
+  }
 
   Future _getCurrentLocation() async {
     Position position = await _determinePosition();
@@ -63,19 +73,25 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
       }
     }
 
-    return Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
   }
 
   pickTime() async {
     TimeOfDay? pickedTime =
         await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    print("time: ${pickedTime}");
 
     if (pickedTime != null) {
-      var df = DateFormat("h:mm a");
-      var dt = df.parse(pickedTime.format(context));
-      var finaltime = DateFormat('HH:mm').format(dt);
+      // var df = DateFormat("hh:mm a");
+      // print("df: $df");
+      // var dt = df.parse(pickedTime.format(context));
+      // var finaltime = DateFormat('HH:mm').format(dt);
 
-      return finaltime;
+      // var finaltime = pickedTime.format(context);
+      // print("final- $finaltime");
+
+      return pickedTime;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: DefaultText(
@@ -87,18 +103,26 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
   }
 
   pickStartTime() async {
-    String? fmtTime = await pickTime();
+    // String? fmtTime = await pickTime();
+    TimeOfDay startTime = await pickTime();
+    String? fmtTime = startTime.format(context);
     setState(() {
-      fmtTime == null
-          ? startInput.text = "00:00:00"
-          : startInput.text = fmtTime;
+      stTime = startTime;
+      startInput.text = fmtTime;
+      // fmtTime == null
+      //     ? startInput.text = "00:00:00"
+      //     : startInput.text = fmtTime;
     });
   }
 
   pickEndTime() async {
-    String? fmtTime = await pickTime();
+    // String? fmtTime = await pickTime();
+    TimeOfDay endTime = await pickTime();
+    String? fmtTime = endTime.format(context);
     setState(() {
-      fmtTime == null ? endInput.text = "00:00:00" : endInput.text = fmtTime;
+      enTime = endTime;
+      endInput.text = fmtTime;
+      // fmtTime == null ? endInput.text = "00:00:00" : endInput.text = fmtTime;
     });
   }
 
@@ -177,18 +201,28 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
     var isValid = _form.currentState!.validate();
     if (!isValid) return; //do not nothing if is not valid
     //else
-    _form.currentState!.save(); //save current state of form
-    await _slotCreation();
+    _form.currentState!.save();
+    print("start time: {$stTime} - end time: {$enTime}");
+    int stSec = stTime.hour * 60 + stTime.minute;
+    int enSec = enTime.hour * 60 + enTime.minute;
+    print("stSec $stSec - enSec: $enSec");
+    if (stSec > enSec) {
+      Constants.DialogBox(
+          context, "Invalid Times Supplied", Colors.amber, Icons.warning_amber);
+    } else {
+      await _slotCreation();
 
-    _reset();
-    Navigator.popAndPushNamed(context, '/lecturerNav');
+      _reset();
+      Navigator.popAndPushNamed(context, '/lecturerNav');
+    }
   }
 
   @override
   void initState() {
+    getCurrentPosition();
     _getLectDetail();
     _getDeptList();
-    startInput.text;
+    // startInput.text;
     super.initState();
   }
 
@@ -220,10 +254,16 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                 children: [
                   DefaultButton(
                       onPressed: () async {
-                        await _getCurrentLocation();
-                        latController.text = _position!.latitude.toString();
-                        lonController.text = _position!.longitude.toString();
+                        await getCurrentPosition();
+                        if (isReady) {
+                        latController.text = position!.latitude.toString();
+                        lonController.text = position!.longitude.toString();
                         radController.text = 100.0.toString();
+                        }
+                        // await _getCurrentLocation();
+                        // latController.text = _position!.latitude.toString();
+                        // lonController.text = _position!.longitude.toString();
+                        // radController.text = 100.0.toString();
                       },
                       text: "Get Coordinates",
                       textSize: 15),
@@ -281,10 +321,10 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                             onSaved: (newVal) {
                               _dept = newVal;
                             },
-                            // validator: (value) {
-                            //   if (value!.isEmpty) return "field is required";
-                            //   return null;
-                            // },
+                            validator: (value) {
+                              if (value == null) return "field is required";
+                              return null;
+                            },
                             value: dropdownvalue,
                             onChanged: (newVal) {
                               setState(() {
@@ -334,7 +374,7 @@ class _InitiateAttendanceState extends State<InitiateAttendance> {
                               _course = newVal;
                             },
                             validator: (value) {
-                              if (value == null && value!.isEmpty) {
+                              if (value == null) {
                                 return "field is required";
                               }
                               return null;

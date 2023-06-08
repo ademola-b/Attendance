@@ -31,6 +31,9 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   CameraService _cameraService = locator<CameraService>();
   late Future<List<AttendanceSlotResponse?>?> futureAttendanceSlot;
 
+  Position? position;
+  bool isReady = false;
+
   late List<StudentFace?>? stdFace;
   List? face = [];
 
@@ -39,6 +42,13 @@ class _MarkAttendanceState extends State<MarkAttendance> {
 
   final StreamController<List<AttendanceSlotResponse>?> _streamController =
       StreamController();
+
+  getCurrentPosition() async {
+    position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    print("LOCATION(from att) => ${position!.toJson()}");
+    isReady = (position != null) ? true : false;
+  }
 
   Future<AttendanceSlotResponse?> _getAttendanceSlot() async {
     List<AttendanceSlotResponse>? att = await RemoteService.attendanceSlot();
@@ -73,6 +83,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
         geofenceStatus = status.toString();
       });
       print(geofenceStatus);
+      print("LOCATION(from att) => ${position!.toJson()}");
     });
   }
 
@@ -102,12 +113,14 @@ class _MarkAttendanceState extends State<MarkAttendance> {
 
   @override
   void initState() {
-    super.initState();
+    getCurrentPosition();
+    print("loaded");
     futureAttendanceSlot = RemoteService.attendanceSlot();
     _initializeServices();
     _getStudentFace();
 
     updateSlot();
+    super.initState();
   }
 
   _initializeServices() async {
@@ -124,6 +137,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
         body: RefreshIndicator(
           onRefresh: (() async {
             await stopStreaming();
+            await getCurrentPosition();
             await _getStudentFace();
             await futureAttendanceSlot;
             return;

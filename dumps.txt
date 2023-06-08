@@ -236,3 +236,8 @@ String parsedTime = DateFormat.jm().format(
       // String formattedTime = DateFormat('HH:mm').format(parsedTime);
       return time;
       return formattedTime;
+
+
+Because location isn't magic. It works on wireless signals, GPS signals, etc. These change, they have noise, they have intereference. The calculations aren't exact. Notice the accuracy- an X meters of accuracy just means there's a 66% chance you're within X meters of that location. So yes, your location will constantly change. You have to decide how much change you're willing to ignore before deciding you've really moved.
+
+Also note that you'll once in a while get a reading that's just really off. For example, if you run GPS all night you'll get a few readings that show you a mile off. You have to filter out these spikes as well, or deal with the fact they appeared to teleport.
