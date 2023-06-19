@@ -180,7 +180,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                   color: Colors.redAccent,
                                 ),
                                 child: const ListTile(
-                                  title: Text('Register Face'),
+                                  title: DefaultText(text:'Register Face', size:16.0),
                                   trailing: Icon(FontAwesomeIcons.angleRight),
                                 ),
                               ),
